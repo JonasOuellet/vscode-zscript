@@ -1,0 +1,69 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "zScript",
+	"patterns": [
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#singleComment"
+		},
+		{
+			"include": "#blockComment"
+		},
+		{
+			"include": "#numericConstant"
+		},
+		{
+			"include": "#zscriptCommand"
+		},
+		{
+			"include": "#zscriptOperator"
+		}
+	],
+	"repository": {
+		"singleComment": {
+			"name": "comment.line.double-slash.zsc",
+			"begin": "//",
+			"end": "$",
+			"patterns": []
+		},
+		"blockComment": {
+			"name": "comment.block.zsc",
+			"begin": "/\\*",
+			"end": "\\*/",
+			"patterns": []
+		},
+		"strings": {
+			"name": "string.quoted.double.zsc",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [{
+					"name": "constant.character.escape.zsc",
+					"match": "\\\\."
+				}]
+		},
+		"numericConstant": {
+			"comment": "Numeric constants",
+			"patterns": [{
+					"name": "constant.numeric.zsc",
+					"match": "\\b([0-9]+\\.?[0-9]*)|(\\.[0-9]+)\\b"
+				}]
+		},
+		"zscriptCommand": {
+			"patterns": [{
+				"name": "keyword.other.zsc",
+				"match": "\\b(zscriptinsert|Assert|IFadeIn|MemGetSize|StrFromAsc|BackColorSet|IFadeOut|MemMove|StrLength|ButtonFind|IFreeze|MemMultiWrite|StrLower|ButtonPress|IGet|MemRead|StrMerge|ButtonSet|IGetFlags|MemReadString|StrokeGetInfo|ButtonUnPress|IGetHotkey|MemResize|StrokeGetLast|CanvasClick|IGetID|MemSaveToFile|StrokeLoad|CanvasGyroHide|IGetInfo|MemWrite|StrokesLoad|CanvasGyroShow|IGetMax|MemWriteString|StrToAsc|CanvasPanGetH|IGetMin|Mesh3DGet|StrUpper|CanvasPanGetV|IGetSecondary|MessageOK|SubTitle|CanvasPanSet|IGetStatus|MessageOKCancel|SubToolGetActiveIndex|CanvasStroke|IGetTitle|MessageYesNo|SubToolGetCount|CanvasStrokes|IHeight|MessageYesNoCancel|SubToolGetID|CanvasZoomGet|IHide|MouseHPos|SubToolLocate|CanvasZoomSet|IHPos|MouseLButton|SubToolSelect|Caption|IKeyPress|MouseVPos|TextCalcWidth|CurveAddPoint|ILock|MTransformGet|Title|CurvesCreateMesh|Image|MTransformSet|ToolGetActiveIndex|CurvesDelete|IMaximize|MVarDef|ToolGetCount|CurvesNewCurve|IMinimize|MVarGet|ToolGetPath|CurvesNew|IModGet|MVarSet|ToolGetSubToolID|CurvesToUI|IModSet|NormalMapCreate|ToolGetSubToolsCount|Delay|Interpolate|Note|ToolLocateSubTool|DispMapCreate|IPress|NoteBar|ToolSelect|Exit|IReset|NoteIButton|ToolSetPath|FileDelete|IsDisabled|NoteIGet|TransformGet|FileExecute|IsEnabled|NoteISwitch|TransformSet|FileExists|ISet|PageSetWidth|TransposeGet|FileGetInfo|ISetHotkey|PaintBackground|TransposeIsShown|FileNameAdvance|ISetMax|PaintBackSliver|TransposeSet|FileNameAsk|ISetMin|PaintPageBreak|Val|FileNameExtract|ISetStatus|PaintRect|VarAdd|FileNameGetLastTyped|IShowActions|PaintTextRect|VarDec|FileNameGetLastUsed|IShow|PD|VarDef|FileNameMake|ISlider|PenMoveCenter|VarDiv|FileNameResolvePath|IsLocked|PenMoveDown|VarInc|FileNameSetNext|IStroke|PenMoveLeft|VarListCopy|FontSetColor|ISubPalette|PenMoveRight|VarLoad|FontSetOpacity|IsUnlocked|PenMove|VarMul|FontSetSize|ISwitch|PenSetColor|VarSave|FontSetSizeLarge|IToggle|PixolPick|VarSet|FontSetSizeMedium|IUnlock|PropertySet|VarSize|FontSetSizeSmall|IUnPress|Randomize|VarSub|FrontColorSet|IUpdate|RGB|Var|GetActiveToolPath|IVPos|RoutineCall|ZBrushInfo|HotKeyText|IWidth|RoutineDef|ZBrushPriorityGet|IButton|Logical Operators|SectionBegin|ZBrushPrioritySet|IClick|Loop|SectionEnd|IClose|LoopContinue|ShellExecute|ZSphereAdd|IColorSet|LoopExit|Sleep|ZSphereDel|IConfig|Math Functions|SleepAgain|ZSphereEdit|IDialog|Math Operators|SoundPlay|ZSphereGet|IDisable|MemCopy|SoundStop|ZSphereSet|IEnable|MemCreate|StrAsk|IExists|MemCreateFromFile|StrExtract|If|MemDelete|StrFind)\\b"
+
+			}]
+		},
+		"zscriptOperator": {
+			"patterns": [{
+				"name": "keyword.other.zsc",
+				"match": "\\b(INT|FRAC|ABS|NEG|MIN|MAX|SQRT|RAND|IRAND|SIN|COS|TAN|ASIN|ACOS|ATAN|ATAN2|LOG|LOG10|BOOL)\\b"
+			}]
+		}
+		
+	},
+	"scopeName": "source.zsc"
+}
