@@ -13,14 +13,23 @@
 		"theme": "dark"
   },
   "license": "LICENSE.md",
+  "bugs": {
+		"url": "https://github.com/JonasOuellet/vscode-zscript/issues",
+		"email": "ouelletjonathan@hotmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/JonasOuellet/vscode-zscript.git"
+	},
+	"homepage": "https://github.com/JonasOuellet/vscode-zscript/blob/master/README.md",
   "keywords": [
     "zscript", 
     "zbrush"
   ],
   "activationEvents": [
     "onLanguage:zscript",
-    "onCommand:extension.openZScriptDoc",
-    "onCommand:extension.openZScriptCommandRef"
+    "onCommand:zscript.openZScriptDoc",
+    "onCommand:zscript.openZScriptCommandRef"
   ],
   "categories": [
     "Programming Languages",
@@ -57,11 +66,11 @@
     ],
     "commands": [
       {
-        "command": "extension.openZScriptDoc",
+        "command": "zscript.openZScriptDoc",
         "title": "ZScript: Web Doc"
       },
       {
-        "command": "extension.openZScriptCommandRef",
+        "command": "zscript.openZScriptCommandRef",
         "title": "ZScript: Web Command Reference"
       }
     ]
@@ -78,11 +87,11 @@
     "vscode": "^1.1.25",
     "tslint": "^5.8.0",
     "@types/node": "^10.12.18",
-    "@types/mocha": "^5.2.5"
+    "@types/mocha": "^5.2.5",
+    "jsdom": "^13.1.0",
+    "@types/opn": "^5.1.0"
   },
   "dependencies": {
-    "@types/opn": "^5.1.0",
-    "jsdom": "^13.1.0",
     "opn": "^5.4.0"
   }
 }

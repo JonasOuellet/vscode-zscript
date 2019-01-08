@@ -1,6 +1,8 @@
 # vscode-zscript
 
 [![Zbrush link](https://img.shields.io/badge/ZBrush-ZScript-orange.svg)](http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/)
+[![GitHub issues](https://img.shields.io/github/issues/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/issues)
+[![GitHub license button](https://img.shields.io/github/license/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/blob/master/LICENSE.md)
 
 ## Description
 
@@ -22,6 +24,10 @@ For example if there is an image subfolder under your extension project workspac
 ## Requirements
 
 If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+
+#### Zbrush Icon Credit 
+<img src="./images/zbrush_icon.svg" width="32" height="32">
+Icon made from [Icon Fonts](http://www.onlinewebfonts.com/icon) is licensed by CC BY 3.0
 
 <!---
 ## Extension Settings
