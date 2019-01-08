@@ -26,7 +26,8 @@ For example if there is an image subfolder under your extension project workspac
 If you have any requirements or dependencies, add a section describing those and how to install and configure them.
 
 #### Zbrush Icon Credit
-<img src="./images/zbrush_icon.svg" width="32" height="32"> Icon made from [Icon Fonts](http://www.onlinewebfonts.com/icon) is licensed by CC BY 3.0 
+<img src="./images/zbrush_icon.svg" width="32" height="32">
+Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC BY 3.0
 
 <!---
 ## Extension Settings
