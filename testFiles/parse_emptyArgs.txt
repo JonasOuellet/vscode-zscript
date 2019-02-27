@@ -1,0 +1,5 @@
+[Note, [StrMerge, "There is ", layerCount, " layers."],, 3]
+
+[]
+
+[]

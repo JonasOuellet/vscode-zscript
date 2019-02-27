@@ -11,6 +11,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "D:/documents/zScriptDoc",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [
@@ -24,6 +25,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceFolder}/testFiles",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test"
             ],
@@ -32,6 +34,16 @@
             ],
             "preLaunchTask": "npm: watch"
         },
+        // {
+        //     "type": "node",
+        //     "request": "launch",
+        //     "name": "Generate Cmds List",
+        //     "program": "${workspaceFolder}/out/dev/genCmdList.js",
+        //     "outFiles": [
+        //         "${workspaceFolder}/out/**/*.js"
+        //     ],
+        //     "preLaunchTask": "npm: watch"
+        // },
         {
             "type": "node",
             "request": "launch",

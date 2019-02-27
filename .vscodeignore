@@ -8,3 +8,7 @@ src/**
 **/tslint.json
 **/*.map
 **/*.ts
+out/dev/**
+test/**
+testfiles/**
+npm-debug.log

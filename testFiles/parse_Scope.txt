@@ -1,0 +1,6 @@
+[Loop, numDays,
+
+    [VarSet, displayMessage, [StrMerge, days(counter), " is the ", index(counter), " day in the week."]]
+    [Note, displayMessage, 1]
+
+, counter]

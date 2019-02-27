@@ -1,0 +1,18 @@
+[VarDef, testVar, 10]
+
+[RoutineDef, simpleRoutine,
+    [Note, displayMessage, 1]
+]
+
+
+[RoutineDef, myRoutine,
+    [VarSet, myVar, 10]
+    [VarSet, myVar2, ""]
+    [VarSet, testVar, 25]
+]
+
+[RoutineDef, myRoutineOutput,
+    [VarSet, myVar, 10]
+    [VarSet, myVar2, ""]
+    [VarSet, output2, 10]
+, input1 /* number */, output2 /*string*/, test3]

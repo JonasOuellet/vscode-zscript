@@ -1,0 +1,15 @@
+[VarDef, var1, 5]
+[VarDef, var2, ""]
+[VarDef, var3(10), 0]
+[VarDef, var4(5), ""]
+
+[VarSet, var1, 10]
+[VarSet, var2, "Alllo"]
+
+
+[Loop, numDays,
+    
+    [VarSet, displayMessage, [StrMerge, days(counter), " is the ", index(counter), " day in the week."]]
+    [Note, displayMessage, 1]
+
+, counter]

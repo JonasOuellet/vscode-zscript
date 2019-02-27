@@ -1,0 +1,134 @@
+[VarDef,numberOfLayers,0]
+[VarDef,tmpLyScrPos,0]
+[VarDef,upN,0]
+[VarDef,layerPath,""]
+[VarDef,layerInt,0]
+
+
+[]
+
+//****routine to find the number of layers*****************
+[RoutineDef,GetLayers,
+	[VarSet,numberOfLayers,0]
+	[If,[IsEnabled,Tool:Layers:Layers Scrollbar],//if there's a scrollbar there is more than	one layer	
+		//store current scroll bar position
+		[VarSet,tmpLyScrPos,[IGetSecondary,Tool:Layers:Layers Scrollbar]]
+		//set scroll bar to a maximum to ensure it is at the top
+		[ISet,Tool:Layers:Layers Scrollbar,0,256]
+		[VarSet,numberOfLayers,[IGetSecondary,Tool:Layers:Layers Scrollbar]+1]
+	,
+		[If,[IsEnabled,"Tool:Layers:Layer Intensity"],
+			[VarSet,numberOfLayers,1]	
+		]
+	]
+]//end routine
+
+
+//****routine to turn off all layers*****************
+[RoutineDef,TurnOffAllLayers,
+  [VarSet,upN,1]
+  //memblock for layer intensity
+  [If,[MemGetSize,Mem_LayerInt],[MemDelete,Mem_LayerInt]]
+  [MVarDef,Mem_LayerInt,1024,0]
+  //memblock for layer modes
+  [If,[MemGetSize,Mem_LayerMod],[MemDelete,Mem_LayerMod]]
+  [MVarDef,Mem_LayerMod,1024,0] 
+	
+	[If,[IsEnabled,"Tool:Layers:Layer Intensity"],	
+		[IFreeze,			
+			//go to top layer	
+			[Loop,numberOfLayers,
+				[If,[IsEnabled,Tool:Layers:SelectUp],
+					[IPress,Tool:Layers:SelectUp]
+					[VarInc,upN]
+					,
+					[LoopExit]
+				]
+			]//end loop						
+			[Loop,numberOfLayers,
+			  [IUpdate,0,1]
+			  //record intensity value
+			  [MVarSet,Mem_LayerInt,[Val,n],[IGet,"Tool:Layers:Layer Intensity"]]
+			  [VarSet,layerPath,[StrMerge,"Tool:Layers:",[IGetTitle,"Tool:Layers:Layer Intensity"]]]		
+        [MVarSet,Mem_LayerMod,[Val,n],[IModGet,layerPath]]	
+				//set to zero
+				[ISet,"Tool:Layers:Layer Intensity",0]					
+				[IUpdate,0,1]
+				[ISet,"Tool:Layers:Layer Intensity",0]//just to make sure
+			
+				//select next layers
+				[If,[IsEnabled,Tool:Layers:SelectDown],
+					[IPress,Tool:Layers:SelectDown]	
+				]					
+			,n]//end loop	
+			//reselect selected layer
+			[VarSet,upN,numberOfLayers-upN]
+			[Loop,[Val,upN],
+			  [If,[IsEnabled,Tool:Layers:SelectUp],
+					[IPress,Tool:Layers:SelectUp]					
+				]	
+			]			
+		]//end freeze	
+	]
+]//end routine
+
+
+
+[RoutineDef,ResetAllLayers,
+  [VarSet,upN,1]	
+	[If,[IsEnabled,"Tool:Layers:Layer Intensity"],	
+		[IFreeze,	
+		//go to top layer	
+			[Loop,numberOfLayers,
+				[If,[IsEnabled,Tool:Layers:SelectUp],
+					[IPress,Tool:Layers:SelectUp]
+					[VarInc,upN]
+					,
+					[LoopExit]
+				]
+			]//end loop							
+			
+			//reset intensity & mode			
+			[VarSet,lIndex,0]
+			[Loop,numberOfLayers,
+  			[If,[MemGetSize,Mem_LayerInt],
+  			  [ISet,"Tool:Layers:Layer Intensity",[MVarGet,Mem_LayerInt,lIndex]]
+  			]
+			  //reset mod if necessary
+			  [If,[MemGetSize,Mem_LayerMod],
+  			  [If,[MVarGet,Mem_LayerMod,lIndex]==0,
+  			    //turn off layer
+  			    [VarSet,layerPath,[StrMerge,"Tool:Layers:",[IGetTitle,"Tool:Layers:Layer Intensity"]]]		
+          	[VarSet,wid,[IWidth,layerPath]]	
+          	[IClick,layerPath,wid-10,5]//turn off layer
+  			  ]
+  			]			    
+			  [VarInc,lIndex]
+				[If,[IsEnabled,Tool:Layers:SelectDown],
+					[IPress,Tool:Layers:SelectDown]
+					,
+					[LoopExit]
+				]
+			]
+			//reselect selected layer
+			[VarSet,upN,numberOfLayers-upN]
+			[Loop,[Val,upN],
+			  [If,[IsEnabled,Tool:Layers:SelectUp],
+					[IPress,Tool:Layers:SelectUp]					
+				]	
+			]							
+		]//end freeze	
+	]
+]
+
+
+
+[IButton,TurnOff,,
+  [RoutineCall,GetLayers]
+  [RoutineCall,TurnOffAllLayers]  
+]
+
+[IButton,TurnOn,,
+  [RoutineCall,GetLayers]
+  [RoutineCall,ResetAllLayers]  
+]

@@ -1,0 +1,4 @@
+[MVarDef, mVarTest, 25]
+[MVarDef, mVarTest2, 50]
+[MVarDef, mVarTest3]
+[MVarDef, mVarTest4, 1.5]

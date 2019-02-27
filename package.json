@@ -3,33 +3,35 @@
   "displayName": "zscript for vsCode",
   "description": "Zscript language support for visual studio code",
   "version": "0.0.1",
-  "publisher": "jouellet",
+  "publisher": "JonasOuellet",
   "engines": {
     "vscode": "^1.30.0"
   },
   "icon": "images/icon.png",
   "galleryBanner": {
-		"color": "#DFC67",
-		"theme": "dark"
+    "color": "#DFC67",
+    "theme": "dark"
   },
   "license": "LICENSE.md",
   "bugs": {
-		"url": "https://github.com/JonasOuellet/vscode-zscript/issues",
-		"email": "ouelletjonathan@hotmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/JonasOuellet/vscode-zscript.git"
-	},
-	"homepage": "https://github.com/JonasOuellet/vscode-zscript/blob/master/README.md",
+    "url": "https://github.com/JonasOuellet/vscode-zscript/issues",
+    "email": "ouelletjonathan@hotmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JonasOuellet/vscode-zscript.git"
+  },
+  "homepage": "https://github.com/JonasOuellet/vscode-zscript/blob/master/README.md",
   "keywords": [
-    "zscript", 
+    "zscript",
     "zbrush"
   ],
   "activationEvents": [
     "onLanguage:zscript",
     "onCommand:zscript.openZScriptDoc",
-    "onCommand:zscript.openZScriptCommandRef"
+    "onCommand:zscript.openZScriptCommandRef",
+    "onCommand:zscript.installFileIcon",
+    "onCommand:zscript.uninstallFileIcon"
   ],
   "categories": [
     "Programming Languages",
@@ -72,6 +74,30 @@
       {
         "command": "zscript.openZScriptCommandRef",
         "title": "ZScript: Web Command Reference"
+      },
+      {
+        "command": "zscript.installFileIcon",
+        "title": "ZScript: Install File Icon"
+      },
+      {
+        "command": "zscript.uninstallFileIcon",
+        "title": "ZScript: Uninstall File Icon"
+      },
+      {
+        "command": "zscript.parse",
+        "title": "ZScript: Parse"
+      }
+    ],
+    "configuration":[
+      {
+        "title": "ZScript",
+        "properties": {
+           "zscript.autoComplete.insertComma": {
+              "type":"boolean",
+              "default": true,
+              "description": "Add comma and space when autocompleting a zscript command"
+           }
+        }
       }
     ]
   },
@@ -89,6 +115,7 @@
     "@types/node": "^10.12.18",
     "@types/mocha": "^5.2.5",
     "jsdom": "^13.1.0",
+    "@types/jsdom": "^12.2.1",
     "@types/opn": "^5.1.0"
   },
   "dependencies": {
