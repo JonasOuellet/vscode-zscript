@@ -19,3 +19,7 @@
 https://github.com/Microsoft/vscode/issues/15723
 // open a document without showing it (for zinsert)
 openTextDocument
+
+
+check for comment when parsing text.
+parse text comment start slash end.

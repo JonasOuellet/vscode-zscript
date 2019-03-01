@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as zparse from '../zParser';
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
-import { zConvertHTMLtoMarkdown, ZCommandObject } from '../zCommandUtil';
+import { zConvertHTMLtoMarkdown, ZCommandObject, ZArgType } from '../zCommandUtil';
 
 
 function getSignature(zobject: ZCommandObject, commandName: string, currentIndex: number ): vscode.SignatureHelp | null {
@@ -41,12 +41,28 @@ function getSignature(zobject: ZCommandObject, commandName: string, currentIndex
 }
 
 
+function getSignatureForRoutineCall(parser: zparse.ZFileParser, command: zparse.ZParsedCommand, index: number): vscode.SignatureHelp | null{
+    let varName = command.getVariableName();
+    let zvar = parser.getVariableByName(varName);
+
+    if (zvar){
+        let zcommand = zvar.parsedObj.parseDocString();
+        if (zcommand){
+            let zobject: ZCommandObject = {};
+            zobject[varName] = zcommand;
+            return getSignature(zobject, varName, index);
+        }
+    }
+
+    return null;
+}
+
 export class ZSignatureProvider implements vscode.SignatureHelpProvider {
     public provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, 
     context: vscode.SignatureHelpContext): vscode.ProviderResult<vscode.SignatureHelp>{
         let parse = new zparse.ZFileParser(document);
         parse.parseDocument();
-        // parse.updateVariable();
+        parse.updateVariable();
 
         let zParsed = parse.getZParsedForPosition(position);
 
@@ -56,8 +72,9 @@ export class ZSignatureProvider implements vscode.SignatureHelpProvider {
                 let command = zParsed.parsedObj as zparse.ZParsedCommand;
                 let commandName = command.commandName;
 
-                if (commandName === 'RoutineCall'){
-                    // Do something special for routine call
+                if (commandName === 'RoutineCall' && zParsed.index >= 2){
+                    // Do something special for routine call when index is >= 2 so we know the name of the var
+                    return getSignatureForRoutineCall(parse, command, zParsed.index - 2);
                 }
                 else{
                     return getSignature(zScriptCmds, commandName, zParsed.index - 1);

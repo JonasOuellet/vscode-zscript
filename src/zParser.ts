@@ -6,7 +6,7 @@
  */
 
 import * as vscode from 'vscode';
-import { ZArgType, ZScriptLevel } from './zCommandUtil';
+import { ZArgType, ZScriptLevel, ZCommandObject, ZCommand, ZArg, getCommandDocString, getZCommandFromDocString } from './zCommandUtil';
 import { zScriptCmds ,zMathFns, ZVarTable } from './zscriptCommands';
 
 
@@ -138,6 +138,8 @@ export class ZParsedCommand extends ZParsed {
 
     insideScope: ZScope;
 
+    isZscriptInsert = false;
+
     constructor(scope: ZScope, insideScope: ZScope, parser: ZFileParser, range?: ZRange, name="", type=ZParsedType.command){
         super(type, scope, parser, range);
         this.insideScope = insideScope;
@@ -243,18 +245,28 @@ export class ZParsedCommand extends ZParsed {
         }
     }
 
+    getDocStringElement(): ZParsedComment | null {
+        let prevElem = this.getNeighbourElement();
+        if (prevElem) {
+            if (prevElem.type === ZParsedType.comment){
+                return prevElem as ZParsedComment;
+            }
+        }
+        return null;
+    }
+
     getDeclarationRange(): ZDeclarationRange {
         let document = this.parser.document;
         let zrange = this.insideScope.range;
         let codeDecRange = zrange.convertToVsCodeRange(document);
         let codeFullRange = codeDecRange;
-        let prevElem = this.getNeighbourElement();
-        if (prevElem) {
-            if (prevElem.type === ZParsedType.comment){
-                zrange.start = prevElem.range.start; 
-                codeFullRange = zrange.convertToVsCodeRange(document);
-            }
+
+        let comment = this.getDocStringElement();
+        if (comment){
+            zrange.start = comment.range.start; 
+            codeFullRange = zrange.convertToVsCodeRange(document);
         }
+
         return {
             fullRange: codeFullRange,
             declaration: codeDecRange
@@ -278,6 +290,60 @@ export class ZParsedCommand extends ZParsed {
         }  
         return "";
     }
+
+    getCommandArgsType(index: number) : ZArgType | undefined{
+        let zobj: ZCommandObject = zScriptCmds;
+        if (this.type === ZParsedType.mathFn){
+            zobj = zMathFns;
+        }else{
+            // since the first element of a command is always the command name.
+            index -= 1;
+        }
+
+        let com = zobj[this.commandName]; 
+        if (com && index < com.args.length){
+            return com.args[index].type;
+        }
+
+        return undefined;
+    }
+
+    getZCommand(): ZCommand {
+        let args: ZArg[] = [];
+        
+        let x = 2;
+        for(let arg in this.args){
+            args.push({
+                description: "${" + x + ":Arg Descriptrion}",
+                name: arg,
+                type: this.args[arg].type
+            });
+            x ++;
+        }
+
+        return {
+            args: args,
+            syntax: '[%s%s]',
+            level: ZScriptLevel.all,
+            description: "${1:Description}",
+            return: ZArgType.null,
+            example: ""
+        };
+    }
+
+    getDocString() : string {
+        return getCommandDocString(this.getZCommand());
+    }
+
+    parseDocString(): ZCommand | null {
+        let comment = this.getDocStringElement();
+        if (comment){
+            let textComment = this.parser.text.slice(comment.range.start, comment.range.end + 1);
+            return getZCommandFromDocString(textComment);
+        }
+
+        return null;
+    }
 }
 
 
@@ -299,8 +365,7 @@ export class ZParsedNumber extends ZParsed {
         super(ZParsedType.lNumber, scope, parser, range);
     }
 }
-
-interface ZParsedPostion {
+export interface ZParsedPosition {
     // index if the Zparsed is a command
     index: number;
     parsedObj: ZParsed;
@@ -586,9 +651,9 @@ export class ZFileParser {
         this.scope = new ZScope(null, 0, this.textLength);
     }
 
-    public parseDocument(){
+    public parseDocument(startPositon: number = 0, stopFunction: Function | undefined = undefined){
         this.reset();
-        this._parse(0, this.scope);
+        this._parse(startPositon, this.scope, [], stopFunction);
     }
 
     parseSingleLineComment(scope: ZScope, startPos: number) : ZParsedComment {
@@ -627,9 +692,13 @@ export class ZFileParser {
         return new ZParsedString(scope, this, new ZRange(startPos, endPos - 1));
     }
 
-    _parse(pos: number, scope: ZScope, endChars?: string[]): number {
+    _parse(pos: number, scope: ZScope, endChars?: string[], stopFunction: Function | undefined = undefined): number {
         let len = this.textLength;
         while (pos < len) {
+            if (stopFunction !== undefined && stopFunction(this)){
+                return pos;
+            }
+
             let c = this.text[pos];
 
             if (endChars) {
@@ -691,6 +760,7 @@ export class ZFileParser {
 
             if (c === '<') {
                 let command = this._parseCommand(pos, scope, '>');
+                command.isZscriptInsert = true;
                 scope.add(command);
                 pos = command.range.end + 1;
                 continue;
@@ -948,13 +1018,13 @@ export class ZFileParser {
      * Return the ZParsed obj at the current position, Return null if the position is not on a ZParsed
      * @param position Position in the document
      */
-    public getZParsedForPosition(position: vscode.Position): ZParsedPostion | null {
+    public getZParsedForPosition(position: vscode.Position): ZParsedPosition | null {
         let pos = this.document.offsetAt(position);
         
         return this._recursiveZParsedForPosition(pos, this.scope);
     }
 
-    private _recursiveZParsedForPosition(pos: number, scope: ZScope, parsedObj:ZParsed | null=null, index=-1): ZParsedPostion | null {
+    private _recursiveZParsedForPosition(pos: number, scope: ZScope, parsedObj:ZParsed | null=null, index=-1): ZParsedPosition | null {
         if (scope.range.isContainingPosition(pos, true)){
             let x = 0;
             while (x < scope.flow.length) {
@@ -1040,20 +1110,54 @@ export class ZFileParser {
         return null;
     }
 
-    getVariableByName(name: string, parsedObj: ZScope): ZVariable | null {
+    getVariableByType(type: ZArgType, parsedObj?: ZScope): ZVariable[] {
+        let out: ZVariable[] = [];
+
+        if (parsedObj){
+            let command = this.getTopLevelParsedCommand(parsedObj);
+            if (command){
+                if (command.commandName === "RoutineDef"){
+                    // check for child in the command def
+                    let varName = command.getVariableName();
+                    let routineVar = this.variablesObj[varName];
+                    if (routineVar){
+                        routineVar.childs.forEach(v => {
+                            if (type === ZArgType.any || v.type === type){
+                                out.push(v);   
+                            }
+                        });
+                    } 
+                }
+            }
+        }
+
+        this.variables.forEach(v => {
+            if (type === ZArgType.any || v.type === type){
+                out.push(v);   
+            }
+        });
+
+        // check in zscript insert.
+        
+        return out;
+    }
+
+    getVariableByName(name: string, parsedObj?: ZScope): ZVariable | null {
         // Check for variable in the routine def. just to make sure that we are looking in the good scope.
-        let command = this.getTopLevelParsedCommand(parsedObj);
-        if (command){
-            if (command.commandName === "RoutineDef"){
-                // check for child in the command def
-                let varName = command.getVariableName();
-                let routineVar = this.variablesObj[varName];
-                if (routineVar){
-                    let zvar = routineVar.childsObj[name];
-                    if (zvar){
-                        return zvar;
-                    }
-                } 
+        if (parsedObj){
+            let command = this.getTopLevelParsedCommand(parsedObj);
+            if (command){
+                if (command.commandName === "RoutineDef"){
+                    // check for child in the command def
+                    let varName = command.getVariableName();
+                    let routineVar = this.variablesObj[varName];
+                    if (routineVar){
+                        let zvar = routineVar.childsObj[name];
+                        if (zvar){
+                            return zvar;
+                        }
+                    } 
+                }
             }
         }
 

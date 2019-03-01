@@ -51,6 +51,7 @@ export interface ZCommandObject {
     [key: string]: ZCommand;
 }
 
+
 export function zWriteCommandToFile(zscriptCommand: ZCommandObject, mathFunction: ZCommandObject, filePath?: undefined | string){
     let outPath = CommandFilePath;
     if (filePath) {
@@ -79,8 +80,62 @@ export function zConvertHTMLtoMarkdown(input: string) : string {
     out = out.replace(/<code>/g, "```zscript\n");
     out = out.replace(/<\/code>/g, "\n```");
 
-    //let markdown = new MarkdownString(out);
-    // markdown.appendCodeblock("[If, MyVariable < 10, [MessageOk, LessThanl0], [MessageOk, l0orMore]]", "zscript");
-    // console.log(markdown);
     return out;
+}
+
+
+export function getCommandDocString(command: ZCommand): string {
+    let out = command.description;
+    
+    command.args.forEach(arg => {
+        out += "\n@param " + arg.name + ": (" + ZArgType[arg.type] + ") - " + arg.description;
+    });
+
+    if (command.return !== ZArgType.null){
+        out += "\nreturn ("+ ZArgType[command.return] + ')';
+    }
+
+    return out;
+}
+
+export function getZCommandFromDocString(docString: string): ZCommand {
+    let cleanDocString = docString.replace(/(\/\*\*|\*\/|\*\s*|\n)/g, "");
+
+    let args: ZArg[] = [];
+    let description = "";
+
+    let reg = /@param (\w+):.\((\w+)\).-.(.*)/g;
+    let regexResult = reg.exec(cleanDocString);
+    if (!regexResult){
+        description = cleanDocString;    
+    }else{
+        description = cleanDocString.slice(0, regexResult.index);
+        
+        while(regexResult){
+            let argType: ZArgType = (<any>ZArgType)[regexResult[2]];
+            if (argType === undefined){
+                argType = ZArgType.any;
+            }
+            args.push({
+                description: regexResult[3],
+                type: argType,
+                name: regexResult[1]
+            });
+            regexResult = reg.exec(cleanDocString);
+        }
+    }
+
+    let syntax = '[%s]';
+    if (args.length){
+        syntax = '[%s, %s]';
+    }
+
+    return {
+        args: args,
+        description: description,
+        example: "",
+        level: ZScriptLevel.all,
+        return: ZArgType.null,
+        syntax: syntax
+    };
 }

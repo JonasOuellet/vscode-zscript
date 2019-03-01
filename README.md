@@ -2,7 +2,7 @@
 
 [![Zbrush link](https://img.shields.io/badge/ZBrush-ZScript-orange.svg)](http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/)
 [![GitHub issues](https://img.shields.io/github/issues/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/issues)
-[![GitHub license button](https://img.shields.io/github/license/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/blob/master/LICENSE.md)
+[![GitHub license button](https://img.shields.io/github/license/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/blob/master/LICENSE)
 
 ## Description
 
