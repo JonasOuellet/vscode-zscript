@@ -6,7 +6,7 @@
  */
 
 import * as vscode from 'vscode';
-import { ZArgType, ZScriptLevel, ZCommandObject, ZCommand, ZArg, getCommandDocString, getZCommandFromDocString, isValidVariableType } from './zCommandUtil';
+import { ZArgType, ZScriptLevel, ZCommandObject, ZCommand, ZArg, getCommandDocString, getZCommandFromDocString, isValidVariableType, ZType } from './zCommandUtil';
 import { zScriptCmds ,zMathFns, ZVarTable } from './zscriptCommands';
 import { resolve, dirname, isAbsolute } from "path";
 import { existsSync } from 'fs';
@@ -194,7 +194,7 @@ export class ZParsedCommand extends ZParsed {
                     if (curFlow.length >= 1){
                         let elem = curFlow[0];
                         if (elem.type === ZParsedType.lText){
-                            let type = ZArgType.any;
+                            let type = ZType.any;
                             let name = elem.getText();
 
                             // Check for comment type
@@ -210,7 +210,7 @@ export class ZParsedCommand extends ZParsed {
                                         if (result){
                                             let typeName = result[1];
                                             if (ZArgType.hasOwnProperty(typeName)){
-                                                type = (<any>ZArgType)[typeName];
+                                                type = (<any>ZType)[typeName];
                                             }
                                         }
                                     }
@@ -236,7 +236,7 @@ export class ZParsedCommand extends ZParsed {
                 while (x < curFlow.length){
                     let elem = curFlow[x];
                     if (elem.type === ZParsedType.lText){
-                        let type = ZArgType.number;
+                        let type = ZType.number;
                         let name = elem.getText();
 
                         this.args[name] = {
@@ -324,7 +324,7 @@ export class ZParsedCommand extends ZParsed {
             args.push({
                 description: "${" + x + ":Arg Descriptrion}",
                 name: arg,
-                type: this.args[arg].type
+                type: <number>this.args[arg].type
             });
             x ++;
         }
@@ -389,7 +389,7 @@ export interface ZVariableObject {
 }
 
 export interface ZCommandArg {
-    type: ZArgType;
+    type: ZType;
     parsed: ZParsedText;
 }
 
@@ -444,7 +444,7 @@ class ZInsert {
 
 
 export class ZVariable {
-    type: ZArgType;
+    type: ZType;
     childs: ZVariable[];
     childsObj: ZVariableObject;
     parent: ZVariable | null;
@@ -464,7 +464,7 @@ export class ZVariable {
 
     parser: ZFileParser;
 
-    constructor(obj: ZParsedCommand, parser: ZFileParser, type = ZArgType.any, parent: ZVariable | null = null) {
+    constructor(obj: ZParsedCommand, parser: ZFileParser, type = ZType.any, parent: ZVariable | null = null) {
         this.childs = [];
         this.childsObj = {};
         this.parent = null;
@@ -480,7 +480,7 @@ export class ZVariable {
     }
 
     getDeclarationText(): string {
-        if (this.type === ZArgType.routine){
+        if (this.type === ZType.routine){
             // remove the commandGroup from the text
             // get the start and end of the 3rd scope ( comamnd group )
             let scopes = this.parsedObj.insideScope.scopes;
@@ -520,7 +520,7 @@ export class ZVariable {
     _initializeSizeAndType(){
         // try to get the type from the parsing value.
         let commandScope = this.parsedObj.insideScope;
-        if (this.type === ZArgType.any){
+        if (this.type === ZType.any){
             // first check if this is an array
             if (commandScope.scopes.length >= 2) {
                 let flow = commandScope.scopes[1].flow;
@@ -553,29 +553,32 @@ export class ZVariable {
                     for (let f of flow){
                         if (f.type === ZParsedType.lNumber){
                             if (this.isArray) {
-                                this.type = ZArgType.numberList;
+                                this.type = ZType.numberList;
                             }else{
-                                this.type = ZArgType.number;
+                                this.type = ZType.number;
                             }
                             break;
                         } else if (f.type === ZParsedType.string) {
                             if (this.isArray) {
-                                this.type = ZArgType.stringList;
+                                this.type = ZType.stringList;
                             }else{
-                                this.type = ZArgType.string;
+                                this.type = ZType.string;
                             }
                             break;
                         } else if (f.type === ZParsedType.command) {
                             // get the return type of the command
                             let fCom = f as ZParsedCommand;
-                            this.type = zScriptCmds[fCom.commandName].return;
+                            let com = zScriptCmds[fCom.commandName];
+                            if (com && com.return !== ZArgType.null){
+                                this.type = <number>com.return;
+                            }
                             break;
                         }
                     }
                 }
             }
             
-        } else if ( this.type === ZArgType.varMemoryBlock || this.type === ZArgType.memoryBlock){
+        } else if ( this.type === ZType.varMemoryBlock || this.type === ZType.memoryBlock){
             // try to get the count
             if (commandScope.scopes.length >= 3) {
                 let s = commandScope.scopes[2];
@@ -593,11 +596,14 @@ export class ZVariable {
     }
 
     getDetail(): string {
-        if (this.type === ZArgType.routine) {
+        if (this.type === ZType.routine) {
             return "routine";
         }
-        if (this.type === ZArgType.memoryBlock) {
+        if (this.type === ZType.memoryBlock) {
             return "memory Block";
+        }
+        if ( this.type === ZType.strokeData){
+            return "stroke data";
         }
 
         let str = ZArgType[this.type];

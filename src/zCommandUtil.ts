@@ -12,14 +12,32 @@ export enum ZScriptLevel {
     topLevel
 }
 
+/*
+ Type of variable available for zscript
+*/
+export enum ZType {
+    any = 0,
+    number = 5,
+    numberList = 7,
+    memoryBlock = 9,
+    routine = 10,
+    string = 11,
+    stringList = 13,
+    strokeData = 14,
+    varMemoryBlock = 15
+}
+
+/*
+ Possible type for comment argument
+*/
 export enum ZArgType {
     any,
-    anyVar, // number var string var, numberListVar stringListVar
+    anyVar, // number var string var, numberListVar stringListVar also stroke data
     anyList, // numberList or stringList
     commandGroup,
     null, // void 
     number,
-    numberVar,
+    numberVar, // if arg type is number var, it can't be a literal number.
     numberList,
     numbers, // number or number List
     memoryBlock,
@@ -33,16 +51,29 @@ export enum ZArgType {
     varName,
 }
 
-export function isValidVariableType(type: ZArgType, targetType: ZArgType): boolean {
-    if (targetType === ZArgType.any){
+/**
+ * Return weither or not a variable type (ZType) is valid for a given command argument type.
+ * @param type type of the variable to check if its type is valid
+ * @param targetType comment argument type.
+ */
+export function isValidVariableType(type: ZType, targetType: ZArgType): boolean {
+    if (targetType === ZArgType.any || type === ZType.any){
         return true;
     }
 
-    if (type === ZArgType.number){
-        return (targetType === type || targetType === ZArgType.numberVar);
+    if (targetType === ZArgType.anyVar){
+        return type === ZType.number || type === ZType.numberList || type === ZType.string || type === ZType.stringList || type === ZType.strokeData;
+    }
+
+    if (type === ZType.number){
+        return (<number>targetType === <number>type || targetType === ZArgType.numberVar);
+    }
+
+    if (<number>type === ZType.string){
+        return (targetType === <number>type || targetType === ZArgType.stringVar);
     }
     
-    return type === targetType;
+    return <number>type === <number>targetType;
 }
 
 export interface ZArg {

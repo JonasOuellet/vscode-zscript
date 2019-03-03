@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ZArgType } from '../zCommandUtil';
+import { ZType } from '../zCommandUtil';
 import { ZParser } from '../zParser';
 
 
@@ -19,7 +19,7 @@ export class ZDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
                 let symbols: vscode.DocumentSymbol[] = [];
 
                 for (let v of parse.variables){
-                    if (v.type === ZArgType.routine){
+                    if (v.type === ZType.routine){
                         let functionSymbol = new vscode.DocumentSymbol(v.name, v.getDetail(), vscode.SymbolKind.Function, 
                         v.range.fullRange, v.range.declaration);
         

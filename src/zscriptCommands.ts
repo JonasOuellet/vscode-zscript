@@ -1312,7 +1312,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Defines a variable (advised Top Level).',
      example: 'Example:\n\n<code>[VarDef, xPos, 1]</code>\n\nDefines a variable with the name “xPos” and initializes it to 1.\n\n<code>[VarDef, xPos(100)]</code>\n\nDefines a list variable named “xPos” with 100 items.<br>\nNote: the list index starts at 0, so xPos(99) is the hundredth item.',
      args: 
-      [ { name: 'name', description: 'Variable name', type: ZArgType.string },
+      [ { name: 'name', description: 'Variable name', type: ZArgType.anyVar },
         { name: 'value', type: ZArgType.any,
           description: 'Variable defaultValue' } ],
      level: ZScriptLevel.topLevel,
@@ -1322,7 +1322,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Sets the value of a named variable (can be placed <b>anywhere</b>).',
      example: 'Example:\n\n<code>[VarSet, xPos, 42]</code>\n\nsets variable “xPos” to 42.\n\n<code>[VarSet, xPos, (Document:Width*.5)]</code>\n\nsets variable “xPos” to Document:Width multiplied by 0.5.',
      args: 
-      [ { name: 'name', description: 'Variable name', type: ZArgType.string },
+      [ { name: 'name', description: 'Variable name', type: ZArgType.anyVar },
         { name: 'value', description: 'New Value', type: ZArgType.any } ],
      level: ZScriptLevel.all,
      return: ZArgType.null },
@@ -1346,7 +1346,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Loads variable/s from a file Output: Number of loaded or verfied values',
      example: 'Example:\n\n<code>[VarLoad, userData, tempFile]</code>\n\nSets variable named “userData” to value/s loaded from the “tempFile.zvr” file.',
      args: 
-      [ { name: 'name', description: 'Variable name', type: ZArgType.string },
+      [ { name: 'name', description: 'Variable name', type: ZArgType.anyVar },
         { name: 'filename', description: 'FileName', type: ZArgType.string },
         { name: 'onlyVerify', type: ZArgType.number,
           description: 'Verify only (1:Only Verify that a proper saved variable file exists, 0:(default)Verifies and loads values)' } ],
@@ -1357,7 +1357,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Saves variable value/s to file Output: Number of saved values',
      example: 'Example:\n\n<code>[VarSave, userData, tempFile]</code>\n\nSaves the current value/s of “userData” variable to “tempFile.zvr” file.',
      args: 
-      [ { name: 'name', description: 'Variable name', type: ZArgType.string },
+      [ { name: 'name', description: 'Variable name', type: ZArgType.anyVar },
         { name: 'FileName', description: 'FileName', type: ZArgType.string } ],
      level: ZScriptLevel.all,
      return: ZArgType.number },

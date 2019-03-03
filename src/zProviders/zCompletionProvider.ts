@@ -1,11 +1,17 @@
 import * as vscode from 'vscode';
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
-import { ZCommand, ZCommandObject, ZArgType } from '../zCommandUtil';
-import { zConvertHTMLtoMarkdown } from "../zCommandUtil";
+import { ZCommand, ZCommandObject, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
 import * as zparse from '../zFileParser';
 import { ZParser } from '../zParser';
 import { basename } from 'path';
 
+/* to be able to autocomplete relative path */
+let commandArgFilename = {
+    zscriptinsert: {
+        id: 1,
+        ext: ['txt']
+    }
+};
 
 let cmdToExecAfter = {
     title: 'Signature Provider',
@@ -29,7 +35,7 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
 
     for ( var property in specificCommand ) {
         let currentCommand: ZCommand = zfunObj[property];
-        if (returnType !== ZArgType.any){
+        if (returnType !== ZArgType.any && returnType !== ZArgType.commandGroup){
             if (returnType !== currentCommand.return){
                 continue;
             }
@@ -49,7 +55,6 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
         cur.detail = "(Command)";
         compItem.push(cur);
     }
-
 }
 
 function addMathFn(compItem: vscode.CompletionItem[]){
@@ -96,7 +101,7 @@ async function addVariableByType(compItem: vscode.CompletionItem[], parser: zpar
             cur.detail = '"' + basename(curV.parser.document.fileName) + '"  ' + cur.detail;
         }
 
-        if (curV.type === ZArgType.routine){
+        if (curV.type === ZType.routine){
             cur.kind = vscode.CompletionItemKind.Function;
         }
         cur.documentation = new vscode.MarkdownString();
@@ -145,7 +150,7 @@ function autoCompleteComment(document: vscode.TextDocument, position: vscode.Pos
 }
 
 function addSnippetType(compItem: vscode.CompletionItem[]){
-    for (let arg in ZArgType){
+    for (let arg in ZType){
         if (isNaN(Number(arg))){
             let txt = "/*" + arg + "*/";
             let cur = new vscode.CompletionItem(txt, vscode.CompletionItemKind.Snippet);
@@ -161,17 +166,41 @@ async function addVariableForRoutineCall(parser: zparse.ZFileParser, routineName
     let out: vscode.CompletionItem[] = [];
 
     let routinedef = await parser.getVariableByName(routineName);
-    if (routinedef && routinedef.type === ZArgType.routine){
+    if (routinedef && routinedef.type === ZType.routine){
         let routineCommand = routinedef.parsedObj;
         // -2 because args start at 2 [RoutineCall, routineName, firstArt]
         let curArgs = Object.keys(routineCommand.args)[parsed.index - 2];
         if (curArgs){
-            return addVariableByType(out, parser, parsed, routineCommand.args[curArgs].type);
+            return addVariableByType(out, parser, parsed, <number>routineCommand.args[curArgs].type);
         }
     }
-
     return out;
 }
+
+
+async function addFunctionTypeForVarSet(parser: zparse.ZFileParser, parsed: zparse.ZParsedPosition, command: zparse.ZParsedCommand,
+    insertComma: Boolean=false): Promise<vscode.CompletionItem[]>{
+    let out: vscode.CompletionItem[] = [];
+    
+    let type = ZArgType.any;
+
+    let varName = command.getVariableName();
+
+    let arg = await parser.getArgsByName(varName, parsed.parsedObj.scope);
+    if (arg){
+        type = <number>arg.args[varName].type;
+
+    }else{
+        // check for variable type
+        let zvar = await parser.getVariableByName(varName, parsed.parsedObj.scope);
+        if (zvar){
+            type = <number>zvar.type;
+        }
+    }
+    addZFunctionToCompletionItem(out, zScriptCmds, 0, insertComma, null, type);
+    return out;
+}
+
 
 
 export class ZCompletionProver implements vscode.CompletionItemProvider {
@@ -209,6 +238,27 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                 let parsed = parser.getZParsedForPosition(position);
 
                 if (parsed){
+                    let parentParsed = parsed.parsedObj.scope.parent;
+                    let returnType = ZArgType.any;
+                    if (parentParsed && parentParsed.owner){
+                        // this is a command inside scope.
+                        let commandName = parentParsed.owner.commandName;
+                        let comObj = zScriptCmds[commandName];
+                        if (comObj){
+                            let index = parentParsed.owner.insideScope.scopes.indexOf(parsed.parsedObj.scope) - 1;
+                            if (commandName === 'VarSet' || commandName === 'VarDef'){
+                                if (index === 1){
+                                    resolve(addFunctionTypeForVarSet(parser, parsed, parentParsed.owner, inserComma));
+                                }
+                            }else{
+                                if ( index > 0 && index < comObj.args.length){
+                                    // do something for VarSet, VarDef variable type.
+                                    returnType = comObj.args[index].type;
+                                }
+                            }
+                        }
+                    }
+
                     if (parsed.parsedObj.type === zparse.ZParsedType.command){
                         let command = parsed.parsedObj as zparse.ZParsedCommand;
                         
@@ -236,7 +286,7 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                             if (command.isZscriptInsert){
                                 addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, {'zscriptinsert': 0});
                             }else{
-                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma);
+                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, null, returnType);
                             }
                         }else{
                             // check for what the command want has an argument
