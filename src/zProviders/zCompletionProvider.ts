@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { zScriptCmds/*, zMathFns */} from "../zscriptCommands";
+import { zScriptCmds, zMathFns } from "../zscriptCommands";
 import { ZCommand, ZCommandObject, ZArgType } from '../zCommandUtil';
 import { zConvertHTMLtoMarkdown } from "../zCommandUtil";
-
-import * as zparse from '../zParser';
+import * as zparse from '../zFileParser';
+import { ZParser } from '../zParser';
+import { basename } from 'path';
 
 
 let cmdToExecAfter = {
@@ -45,45 +46,68 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
                 cur.commitCharacters = [',', '\s'];
             }
         }
+        cur.detail = "(Command)";
         compItem.push(cur);
     }
 
 }
 
-function addVariableByType(parser: zparse.ZFileParser, compItem: vscode.CompletionItem[], parsed: zparse.ZParsedPosition, argType: ZArgType,
-    zfunObj?: ZCommandObject, currentArgsIndex?: number)
-    {
-    let args = parser.getArgsListForZParsed(parsed.parsedObj.scope);
+function addMathFn(compItem: vscode.CompletionItem[]){
+    for ( var property in zMathFns ) {
+        let currentCommand: ZCommand = zMathFns[property];
+
+        let cur = new vscode.CompletionItem(property, vscode.CompletionItemKind.Method);
+        cur.documentation = new vscode.MarkdownString(zConvertHTMLtoMarkdown(currentCommand.description));
+        cur.insertText = new vscode.SnippetString(property + '(${1:})');
+        cur.command = cmdToExecAfter;
+        cur.detail = "(Math Function)";
+        cur.sortText = '1' + property;
+
+        compItem.push(cur);
+    }
+}
+
+async function addVariableByType(compItem: vscode.CompletionItem[], parser: zparse.ZFileParser, parsed: zparse.ZParsedPosition,
+    argType: ZArgType): Promise<vscode.CompletionItem[]>{
+    
+    let args = parser.getArgsListForZParsed(parsed.parsedObj.scope, argType);
     for (let arg in args){
         let command = args[arg]; 
         let curArg = command.args[arg];
-        if (argType === ZArgType.any || curArg.type === argType){
-            let cur = new vscode.CompletionItem(arg, vscode.CompletionItemKind.Property);
-            cur.documentation = "(parameter) " + arg + ": " + ZArgType[curArg.type];
-            cur.detail = cur.documentation;
-            if (command.commandName === "RoutineDef"){
-                cur.documentation += " of Routine \"" + command.getVariableName() + "\"";
-            }
-            // make sur that this item is at the top i.e before other auto complete
-            cur.sortText = '0' + arg;
-            compItem.push(cur);
+        let cur = new vscode.CompletionItem(arg, vscode.CompletionItemKind.Property);
+        cur.documentation = "(parameter) " + arg + ": " + ZArgType[curArg.type];
+        cur.detail = cur.documentation;
+        if (command.commandName === "RoutineDef"){
+            cur.documentation += " of Routine \"" + command.getVariableName() + "\"";
         }
+        // make sur that this item is at the top i.e before other auto complete
+        cur.sortText = '0' + arg;
+        compItem.push(cur);
     }
 
-    let zvar = parser.getVariableByType(argType, parsed.parsedObj.scope);
-    zvar.forEach(v => {
-        let cur = new vscode.CompletionItem(v.name, vscode.CompletionItemKind.Variable);
-        cur.detail = "(" + ZArgType[v.type] + ") " + v.name;
-        if (v.type === ZArgType.routine){
+    let zvar = await parser.getVariableByType(argType, parsed.parsedObj.scope);
+    for (let v in zvar){
+        let curV = zvar[v];
+        let cur = new vscode.CompletionItem(v, vscode.CompletionItemKind.Variable);
+        cur.detail = "(" + ZArgType[curV.type] + ") " + v;
+        
+        // if the variable parser is not the same as the current parser the var is in another document
+        if (curV.parser !== parser){
+            cur.detail = '"' + basename(curV.parser.document.fileName) + '"  ' + cur.detail;
+        }
+
+        if (curV.type === ZArgType.routine){
             cur.kind = vscode.CompletionItemKind.Function;
         }
         cur.documentation = new vscode.MarkdownString();
-        cur.documentation.appendCodeblock(v.getDeclarationText(), "zscript");
-        cur.documentation.appendText(v.getDocumentationText());
+        cur.documentation.appendCodeblock(curV.getDeclarationText(), "zscript");
+        cur.documentation.appendText(curV.getDocumentationText());
 
-        cur.sortText = '0' + v.name;
+        cur.sortText = '0' + v;
         compItem.push(cur);
-    });
+    }
+    
+    return compItem;
 }
 
 function autoCompleteComment(document: vscode.TextDocument, position: vscode.Position) : vscode.CompletionList{
@@ -133,11 +157,38 @@ function addSnippetType(compItem: vscode.CompletionItem[]){
     }
 }
 
+async function addVariableForRoutineCall(parser: zparse.ZFileParser, routineName: string, parsed: zparse.ZParsedPosition): Promise<vscode.CompletionItem[]>{
+    let out: vscode.CompletionItem[] = [];
+
+    let routinedef = await parser.getVariableByName(routineName);
+    if (routinedef && routinedef.type === ZArgType.routine){
+        let routineCommand = routinedef.parsedObj;
+        // -2 because args start at 2 [RoutineCall, routineName, firstArt]
+        let curArgs = Object.keys(routineCommand.args)[parsed.index - 2];
+        if (curArgs){
+            return addVariableByType(out, parser, parsed, routineCommand.args[curArgs].type);
+        }
+    }
+
+    return out;
+}
+
 
 export class ZCompletionProver implements vscode.CompletionItemProvider {
+
+    parser: ZParser;
+
+    constructor (parser: ZParser){
+        this.parser = parser;
+    }
+
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, 
                                   context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList>
     {
+        /*
+         This cannot be in the promise with the parsed because since the char is /** the rest of the document will be 
+         parsed as a multiline comment.
+        */
         if (context.triggerCharacter === "*"){
             // check if its "/**"
             let start = new vscode.Position(position.line, Math.max(position.character - 3, 0));
@@ -152,46 +203,64 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
         let zscriptConfig = vscode.workspace.getConfiguration('zscript');
         let inserComma = zscriptConfig.get<Boolean>("autoComplete.insertComma");
 
-        let parser = new zparse.ZFileParser(document);
-        parser.parseDocument();
-        parser.updateVariable();
+        return new Promise((resolve, reject) => {
+            this.parser.getZFileParser(document).then(parser => {
+                let out: vscode.CompletionItem[] = [];
+                let parsed = parser.getZParsedForPosition(position);
 
-        let parsed = parser.getZParsedForPosition(position);
+                if (parsed){
+                    if (parsed.parsedObj.type === zparse.ZParsedType.command){
+                        let command = parsed.parsedObj as zparse.ZParsedCommand;
+                        
+                        if (parsed.index >= 3){
+                            if (command.commandName === "RoutineDef"){
+                                    addSnippetType(out);
+                                    resolve(out);
+                                }
+                            
+                        }
 
-        let out: vscode.CompletionItem[] = [];
+                        if (parsed.index >= 2){
+                            if (command.commandName === "RoutineCall"){
+                                let routineName = command.getVariableName();
+                                resolve(addVariableForRoutineCall(parser, routineName, parsed));
+                            }
+                        }
 
-        if (parsed){
-            if (parsed.parsedObj.type === zparse.ZParsedType.command){
-                let command = parsed.parsedObj as zparse.ZParsedCommand;
+                        // first argument of the command
+                        // usually the command name list all command
+                        if (parsed.index <= 0){
+                            if (command.insideScope.scopes.length > 1){
+                                inserComma = false;
+                            }
+                            if (command.isZscriptInsert){
+                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, {'zscriptinsert': 0});
+                            }else{
+                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma);
+                            }
+                        }else{
+                            // check for what the command want has an argument
+                            let argType = command.getCommandArgsType(parsed.index);
+                            if (argType === undefined){
+                                argType = ZArgType.any;
+                            }
+                            if (argType === ZArgType.any || argType === ZArgType.number){
+                                addMathFn(out);
+                            }
 
-                if (command.commandName === "RoutineDef"){
-                    if (parsed.index >= 3){
-                        addSnippetType(out);
-                        return out;
+                            resolve(addVariableByType(out, parser, parsed, argType));
+                        }
+                    }
+                    
+                    if (parsed.parsedObj.type === zparse.ZParsedType.mathFn){
+                        resolve(addVariableByType(out, parser, parsed, ZArgType.number));
                     }
                 }
-
-                // first argument of the command
-                // usually the command name list all command
-                if (parsed.index <= 0){
-                    if (command.insideScope.scopes.length > 1){
-                        inserComma = false;
-                    }
-                    if (command.isZscriptInsert){
-                        addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, {'zscriptinsert': 0});
-                    }else{
-                        addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma);
-                    }
-                }else{
-                    // check for what the command want has an argument
-                    let argType = command.getCommandArgsType(parsed.index);
-                    if (argType !== undefined){
-                        addVariableByType(parser, out, parsed, ZArgType.any);
-                    }
-                }
-            }
-        }
-        
-        return out;
+                resolve(out);
+            }).catch(reason => {
+                console.log(reason);
+                reject(reason);
+            });
+        });
     }
 }

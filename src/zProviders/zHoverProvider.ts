@@ -1,11 +1,37 @@
 import * as vscode from 'vscode';
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
 import { zConvertHTMLtoMarkdown, ZArgType } from "../zCommandUtil";
-import * as zparse from '../zParser';
+import { ZParser } from '../zParser';
+import { ZFileParser, ZScope, ZParsedType } from '../zFileParser';
+
+
+async function getVariableByName(parse: ZFileParser, name: string, scope: ZScope): Promise<vscode.Hover | null> {
+    let zvar = await parse.getVariableByName(name, scope);
+    if (zvar){
+        let declartionstring = new vscode.MarkdownString();
+        declartionstring.appendCodeblock(zvar.getDeclarationText(), "zscript");
+
+        return {
+            contents: [declartionstring,
+                       zvar.getDocumentationText(),
+                       "type: " + ZArgType[zvar.type]]
+        };
+    }
+    return null;
+}
+
 
 export class ZHoverProvider implements vscode.HoverProvider {
+    
+    parser: ZParser;
+
+    constructor (parser: ZParser){
+        this.parser = parser;
+    }
+
     public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): 
-                        vscode.ProviderResult<vscode.Hover> {
+                        vscode.ProviderResult<vscode.Hover> { 
+
         let wordRange = document.getWordRangeAtPosition(position);
         let word = document.getText(wordRange);
 
@@ -42,33 +68,27 @@ export class ZHoverProvider implements vscode.HoverProvider {
             word = word.slice(1);
         }
 
-        let parse = new zparse.ZFileParser(document);
-        parse.parseDocument();
-        parse.updateVariable();
-
-        let parsed = parse.getZParsedForPosition(position);
-        if (parsed){
-            let scope = parsed.parsedObj.scope;
-            let command = parse.getArgsByName(word, scope);
-            if (command){
-                let arg = command.args[word];
-                return {
-                    contents: ["(arg) " + word + ": " + ZArgType[arg.type]]
-                };
-            }
-
-            let zvar = parse.getVariableByName(word, scope);
-            if (zvar){
-                let declartionstring = new vscode.MarkdownString();
-                declartionstring.appendCodeblock(zvar.getDeclarationText(), "zscript");
-
-                return {
-                    contents: [declartionstring,
-                               zvar.getDocumentationText(),
-                               "type: " + ZArgType[zvar.type]]
-                };
-            }
-        }
-        return null;
+        return new Promise((resolve, reject)=>{
+            this.parser.getZFileParser(document).then(parse => {
+                let parsed = parse.getZParsedForPosition(position);
+                if (parsed){
+                    if (parsed.parsedObj.type === ZParsedType.lText){
+                        let scope = parsed.parsedObj.scope;
+                        let command = parse.getArgsByName(word, scope);
+                        if (command){
+                            let arg = command.args[word];
+                            resolve({
+                                contents: ["(arg) " + word + ": " + ZArgType[arg.type]]
+                            });
+                        }
+                        resolve(getVariableByName(parse, word, scope));
+                    }
+                }
+                resolve(null);
+            }).catch(reason => {
+                console.log(reason);
+                reject(reason);
+            });
+        });
     }
 }

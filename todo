@@ -1,25 +1,8 @@
 1 - command that has color parameters:  NoteIButton, Note, NoteISwitch
     a - Check for color provider "registerColorProvider"
 
-2 - return type
+2 - Val, strange command.
 
-3 - icon for .zvr files ?
+3 - Double check var argument where I put a string parameters and it should be number (variable number)
 
-4 - Val, strange command.
-
-5 - add data type as snippet
-
-6 - Double check var argument where I put a string parameters and it should be number (variable number)
-
-7 - Hexadecimal number // done
-
-8 - What to do with loop and counter var ?
-
-
-https://github.com/Microsoft/vscode/issues/15723
-// open a document without showing it (for zinsert)
-openTextDocument
-
-
-check for comment when parsing text.
-parse text comment start slash end.
+4 - autocomplete path when using zscript insert  

@@ -9,6 +9,11 @@
             "prefix": "IfElse",
             "body": "[If, ${1:statement},\n\t[${2:CommandToExecuteIfStatementIsTrue}]\n, /* Else */\n\t[${3:CommandToExecuteIfStatementIsFalse}]\n]",
             "description": "Provides conditional execution of a commands group"
+        },
+        "Loop": {
+            "prefix": "Loop",
+            "body": "[Loop, ${1:count},\n\t[${3:Command}]\n, ${2:counter}]",
+            "description": "Repeats execution of the specified commands group"
         }
     }
 }

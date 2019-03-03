@@ -29,7 +29,20 @@ export enum ZArgType {
     stringList,
     strokeData,
     varMemoryBlock,
-    scriptInsert
+    scriptInsert,
+    varName,
+}
+
+export function isValidVariableType(type: ZArgType, targetType: ZArgType): boolean {
+    if (targetType === ZArgType.any){
+        return true;
+    }
+
+    if (type === ZArgType.number){
+        return (targetType === type || targetType === ZArgType.numberVar);
+    }
+    
+    return type === targetType;
 }
 
 export interface ZArg {
@@ -83,6 +96,37 @@ export function zConvertHTMLtoMarkdown(input: string) : string {
     return out;
 }
 
+export function zConvertHTMLtoPlain(input: string): string {
+    let out = input.replace(/(<b>|<\/b>)/g, "");
+    out = out.replace(/(<i>|<\/i>|<em>|<\/em>)/g, "");
+    out = out.replace(/<code>/g, "");
+    out = out.replace(/<\/code>/g, "");
+
+    return out;
+}
+
+export function getCommandDeclaration(name: string, command: ZCommand): string {
+    let out = command.syntax.replace("%s", name);
+
+    if (command.args.length){
+        let args = "";
+
+        let start = true;
+        for (let arg of command.args){
+            if (start){
+                start = false;
+            }else{
+                args += ', ';
+            }
+            args += arg.name;
+        }
+
+        out = out.replace("%s", args);
+    }
+    
+    return out;
+}
+
 
 export function getCommandDocString(command: ZCommand): string {
     let out = command.description;
@@ -93,6 +137,10 @@ export function getCommandDocString(command: ZCommand): string {
 
     if (command.return !== ZArgType.null){
         out += "\nreturn ("+ ZArgType[command.return] + ')';
+    }
+
+    if (command.example){
+        out += "\n\n" + command.example;
     }
 
     return out;

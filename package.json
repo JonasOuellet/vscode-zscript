@@ -9,7 +9,7 @@
   },
   "icon": "images/icon.png",
   "galleryBanner": {
-    "color": "#DFC67",
+    "color": "#6EA2DD",
     "theme": "dark"
   },
   "license": "LICENSE",
@@ -115,6 +115,5 @@
     "@types/opn": "^5.1.0"
   },
   "dependencies": {
-    "opn": "^5.4.0"
   }
 }

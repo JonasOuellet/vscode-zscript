@@ -1,10 +1,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import opn = require('opn');
 import { ZHoverProvider, ZCompletionProver, ZDefinitionProvider, ZSignatureProvider, 
     ZDocumentSymbolProvider } from "./zProviders";
 import { installIcon, uninstallIcon } from "./install_icon";
+import { ZParser } from './zParser';
 
 
 let ZScriptDocSelector : vscode.DocumentSelector = {
@@ -17,33 +17,39 @@ let ZScriptDocSelector : vscode.DocumentSelector = {
 export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('zscript.openZScriptDoc', () => {
-        opn("http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/");
+        vscode.commands.executeCommand('vscode.open', 
+            vscode.Uri.parse("http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/"));
     }));
     
     context.subscriptions.push(vscode.commands.registerCommand('zscript.openZScriptCommandRef', () => {
-        opn("http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/command-reference/");
+        vscode.commands.executeCommand('vscode.open', 
+            vscode.Uri.parse("http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/command-reference/"));
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("zscript.installFileIcon", installIcon));
     context.subscriptions.push(vscode.commands.registerCommand("zscript.uninstallFileIcon", uninstallIcon));
-    
-    let hoverProvider = new ZHoverProvider();
+
+    /*
+        Providers definition
+    */
+    let parser = new ZParser();
+
+    let hoverProvider = new ZHoverProvider(parser);
     context.subscriptions.push(vscode.languages.registerHoverProvider(ZScriptDocSelector, hoverProvider));
 
-    let completionProvider = new ZCompletionProver();
+    let completionProvider = new ZCompletionProver(parser);
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ZScriptDocSelector, completionProvider, '[', '<', "*"));
 
-    let definitionProvider = new ZDefinitionProvider();
+    let definitionProvider = new ZDefinitionProvider(parser);
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(ZScriptDocSelector, definitionProvider));
 
-    let signatureProvider = new ZSignatureProvider();
+    let signatureProvider = new ZSignatureProvider(parser);
     context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(ZScriptDocSelector, signatureProvider, ',', '('));
 
-    let documentSymbolsProvider = new ZDocumentSymbolProvider();
+    let documentSymbolsProvider = new ZDocumentSymbolProvider(parser);
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ZScriptDocSelector, documentSymbolsProvider));
 
-    // let documentHighlightProvider = new ZDocumentHighlighProvider();
-    // context.subscriptions.push(vscode.languages.registerDocumentHighlightProvider(ZScriptDocSelector, documentHighlightProvider));
+    context.subscriptions.push(parser);
 }
 
 // this method is called when your extension is deactivated
