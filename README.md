@@ -17,65 +17,70 @@ Describe specific features of your extension including screenshots of your exten
 
 For example if there is an image subfolder under your extension project workspace:
 
-\!\[feature X\]\(images/feature-x.png\)
+### Intelligent autocomplete
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* Only display the valid variable type
+* Path auto complete for command that require path (ex: `<zscriptinsert, "myScript.txt">`)
+![zscriptinsert_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/zscriptinsert_auto.png)
+* Routine definition comment
 
-## Requirements
+* Routine definition arg type
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+![routine_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/routine_auto.gif)
 
-#### Zbrush Icon Credit
-<img src="./images/zbrush_icon.svg" width="32" height="32">
-Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC BY 3.0
 
-<!---
-## Extension Settings
+### ZCommand Signature
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Display information about each command argument (type, description)
 
-For example:
+![signature](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/signature.gif)
 
-This extension contributes the following settings:
+### Hover
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+Provide information about a symbol when hovering it.
 
-## Known Issues
+![hover](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/hover.png)
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+
+
+### Variables 
+
+* Display all the variables in the file.
+* provide `goto declaration` functionality
+* Variable has type.
+
+### Snippets
+
+* `Loop` insert a loop command snippet.
+* `If` insert a if command snippet.
+* `IfElse` insert a if else command snippet.
+* `RoutineDef` insert a routine definition snippet.
+* `RoutineDef1` insert a routine definition with one arg snippet.
+
+### Adding type for routine Definition
+
+You can specifiy the type of your routine definition optional argument to have a better signature and help the autocomplete displaying the good variable type.
+
+### Support for zscriptinsert
+
+Autocomplete will display variable defined in the inserted file.
+
+### Commands
+
+* `ZScript: Web Doc` Open the zscript documentation web page in your browser
+* `ZScript: Web Command Reference"` Open the zscript command reference web page in your browser.
+* `ZScript: Install File Icon` Display the zbrush icon for zscript files.![zscript_file_icon](images/zscript_file_icon.png)
+* `ZScript: Uninstall File Icon` Remove the zscript icon display.
+
+
+## Future implementation
+
+### Color Provider
+
+Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know what the color is without looking somewhere else. Hopefully visual studio offer to provide color picker with `ColorProvider`.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
-
--->
+Initial release.

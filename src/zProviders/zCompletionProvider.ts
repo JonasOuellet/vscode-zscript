@@ -6,17 +6,17 @@ import { ZParser } from '../zParser';
 import * as path from 'path';
 import { readdirSync, statSync } from 'fs';
 
-interface cmdWithFilename {
+interface CmdWithFilename {
     id: number;
     ext: string[];
 }
 
-interface cmdWithFilenameList {
-    [keys: string]: cmdWithFilename;
+interface CmdWithFilenameList {
+    [keys: string]: CmdWithFilename;
 }
 
 /* to be able to autocomplete relative path */
-let cmdArgFilename: cmdWithFilenameList = {
+let cmdArgFilename: CmdWithFilenameList = {
     zscriptinsert: {
         id: 1,
         ext: ['.txt']
@@ -291,7 +291,7 @@ async function addVariableTypeForVarSet(parser: zparse.ZFileParser, parsed: zpar
         return addVariableByType(out, parser, parsed, type);
 }
 
-async function getRelativePath(startPath: string, curFilePath: string, cmdFile: cmdWithFilename): Promise<vscode.CompletionItem[]> {
+async function getRelativePath(startPath: string, curFilePath: string, cmdFile: CmdWithFilename): Promise<vscode.CompletionItem[]> {
     let out: vscode.CompletionItem[] = [];
 
     let dirName = path.dirname(curFilePath);
