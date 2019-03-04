@@ -12,3 +12,4 @@ out/dev/**
 test/**
 testfiles/**
 npm-debug.log
+images/**

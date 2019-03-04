@@ -299,7 +299,6 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
     dirName = path.resolve(dirName, startPath);
 
     let backDir = new vscode.CompletionItem("../", vscode.CompletionItemKind.Folder);
-    backDir.detail = 'back dir';
     out.push(backDir);
 
     let paths = readdirSync(dirName);
@@ -316,23 +315,23 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
             out.push(comp);
         }
         else{
-            let add = true;
-            if (cmdFile.ext.length > 0){
-                let ext = path.extname(filename);
-                if (cmdFile.ext.indexOf(ext) < 0){
-                    add = false;
+            if (fpath !== curFilePath){
+                let add = true;
+
+                if (cmdFile.ext.length > 0){
+                    let ext = path.extname(filename);
+                    if (cmdFile.ext.indexOf(ext) < 0){
+                        add = false;
+                    }
                 }
-            }
-            if (add){
-                out.push(new vscode.CompletionItem(filename, vscode.CompletionItemKind.File));
+                if (add){
+                    out.push(new vscode.CompletionItem(filename, vscode.CompletionItemKind.File));
+                }
             }
         }
     }
-
     return out;
 }
-
-
 
 export class ZCompletionProver implements vscode.CompletionItemProvider {
 
