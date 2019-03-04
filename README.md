@@ -69,7 +69,7 @@ Autocomplete will display variable defined in the inserted file.
 
 * `ZScript: Web Doc` Open the zscript documentation web page in your browser
 * `ZScript: Web Command Reference"` Open the zscript command reference web page in your browser.
-* `ZScript: Install File Icon` Display the zbrush icon for zscript files.![zscript_file_icon](images/zscript_file_icon.png)
+* `ZScript: Install File Icon` Display the zbrush icon for zscript files.![zscript_file_icon](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/zscript_file_icon.png)
 * `ZScript: Uninstall File Icon` Remove the zscript icon display.
 
 
