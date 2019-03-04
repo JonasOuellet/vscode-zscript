@@ -3,13 +3,7 @@
 	"name": "zScript",
 	"patterns": [
 		{
-			"include": "#strings"
-		},
-		{
-			"include": "#singleComment"
-		},
-		{
-			"include": "#blockComment"
+			"include": "#variable"
 		},
 		{
 			"include": "#numericConstant"
@@ -19,6 +13,15 @@
 		},
 		{
 			"include": "#zscriptOperator"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#singleComment"
+		},
+		{
+			"include": "#blockComment"
 		}
 	],
 	"repository": {
@@ -61,6 +64,12 @@
 			"patterns": [{
 				"name": "keyword.other.zsc",
 				"match": "\\b(INT|FRAC|ABS|NEG|MIN|MAX|SQRT|RAND|IRAND|SIN|COS|TAN|ASIN|ACOS|ATAN|ATAN2|LOG|LOG10|BOOL)\\b"
+			}]
+		},
+		"variable": {
+			"patterns": [{
+				"name": "variable.other",
+				"match": "(#\\w+)"
 			}]
 		}
 		

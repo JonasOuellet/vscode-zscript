@@ -3,13 +3,75 @@ import { zScriptCmds, zMathFns } from "../zscriptCommands";
 import { ZCommand, ZCommandObject, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
 import * as zparse from '../zFileParser';
 import { ZParser } from '../zParser';
-import { basename } from 'path';
+import * as path from 'path';
+import { readdirSync, statSync } from 'fs';
+
+interface cmdWithFilename {
+    id: number;
+    ext: string[];
+}
+
+interface cmdWithFilenameList {
+    [keys: string]: cmdWithFilename;
+}
 
 /* to be able to autocomplete relative path */
-let commandArgFilename = {
+let cmdArgFilename: cmdWithFilenameList = {
     zscriptinsert: {
         id: 1,
-        ext: ['txt']
+        ext: ['.txt']
+    },
+    MemCreateFromFile: {
+        id: 2,
+        ext: []
+    },
+    StrokeLoad: {
+        id: 1,
+        ext: ['.txt']
+    },
+    StrokeLoads: {
+        id: 1,
+        ext: ['.txt']
+    },
+    Image: {
+        id: 1,
+        ext: ['.psd', '.bmp']
+    },
+    VarLoad: {
+        id: 2,
+        ext: ['.zvr']
+    },
+    VarSave: {
+        id: 2,
+        ext: ['.zvr']
+    },
+    FileExecute: {
+        id: 1,
+        ext: ['.dll']
+    },
+    FileExists: {
+        id: 1,
+        ext: []
+    },
+    FileGetInfo: {
+        id: 1,
+        ext: []
+    },
+    FileNameAdvance: {
+        id: 1,
+        ext: []
+    },
+    FileNameMake: {
+        id: 1,
+        ext: []
+    },
+    FileNameResolvePath: {
+        id: 1,
+        ext: []
+    },
+    FileNameSetNext: {
+        id: 1,
+        ext: []
     }
 };
 
@@ -36,7 +98,7 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
     for ( var property in specificCommand ) {
         let currentCommand: ZCommand = zfunObj[property];
         if (returnType !== ZArgType.any && returnType !== ZArgType.commandGroup){
-            if (returnType !== currentCommand.return){
+            if (currentCommand.return !== ZArgType.any && returnType !== currentCommand.return){
                 continue;
             }
         }
@@ -98,7 +160,7 @@ async function addVariableByType(compItem: vscode.CompletionItem[], parser: zpar
         
         // if the variable parser is not the same as the current parser the var is in another document
         if (curV.parser !== parser){
-            cur.detail = '"' + basename(curV.parser.document.fileName) + '"  ' + cur.detail;
+            cur.detail = '"' + path.basename(curV.parser.document.fileName) + '"  ' + cur.detail;
         }
 
         if (curV.type === ZType.routine){
@@ -201,6 +263,75 @@ async function addFunctionTypeForVarSet(parser: zparse.ZFileParser, parsed: zpar
     return out;
 }
 
+async function addVariableTypeForVarSet(parser: zparse.ZFileParser, parsed: zparse.ZParsedPosition, command: zparse.ZParsedCommand): Promise<vscode.CompletionItem[]> {
+        let out: vscode.CompletionItem[] = [];
+        
+        let type = ZArgType.any;
+    
+        let varName = command.getVariableName();
+    
+        let arg = await parser.getArgsByName(varName, parsed.parsedObj.scope);
+        if (arg){
+            type = <number>arg.args[varName].type;
+    
+        }else{
+            // check for variable type
+            let zvar = await parser.getVariableByName(varName, parsed.parsedObj.scope);
+            if (zvar){
+                type = <number>zvar.type;
+
+                if (type === ZArgType.numberList){
+                    type = ZArgType.number;
+                }else if (type === ZArgType.stringList){
+                    type = ZArgType.string;
+                }
+            }
+        }
+
+        return addVariableByType(out, parser, parsed, type);
+}
+
+async function getRelativePath(startPath: string, curFilePath: string, cmdFile: cmdWithFilename): Promise<vscode.CompletionItem[]> {
+    let out: vscode.CompletionItem[] = [];
+
+    let dirName = path.dirname(curFilePath);
+    
+    dirName = path.resolve(dirName, startPath);
+
+    let backDir = new vscode.CompletionItem("../", vscode.CompletionItemKind.Folder);
+    backDir.detail = 'back dir';
+    out.push(backDir);
+
+    let paths = readdirSync(dirName);
+    for (let filename of paths) {
+        var fpath = path.join(dirName, filename);
+
+        let stat = statSync(fpath);
+        if (stat.isDirectory()){
+            let comp = new vscode.CompletionItem(filename + '/', vscode.CompletionItemKind.Folder);
+            comp.command = {
+                title: 'Folder autocomplete',
+                command: "editor.action.triggerSuggest"
+            };
+            out.push(comp);
+        }
+        else{
+            let add = true;
+            if (cmdFile.ext.length > 0){
+                let ext = path.extname(filename);
+                if (cmdFile.ext.indexOf(ext) < 0){
+                    add = false;
+                }
+            }
+            if (add){
+                out.push(new vscode.CompletionItem(filename, vscode.CompletionItemKind.File));
+            }
+        }
+    }
+
+    return out;
+}
+
 
 
 export class ZCompletionProver implements vscode.CompletionItemProvider {
@@ -238,30 +369,52 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                 let parsed = parser.getZParsedForPosition(position);
 
                 if (parsed){
-                    let parentParsed = parsed.parsedObj.scope.parent;
-                    let returnType = ZArgType.any;
-                    if (parentParsed && parentParsed.owner){
-                        // this is a command inside scope.
-                        let commandName = parentParsed.owner.commandName;
-                        let comObj = zScriptCmds[commandName];
-                        if (comObj){
-                            let index = parentParsed.owner.insideScope.scopes.indexOf(parsed.parsedObj.scope) - 1;
-                            if (commandName === 'VarSet' || commandName === 'VarDef'){
-                                if (index === 1){
-                                    resolve(addFunctionTypeForVarSet(parser, parsed, parentParsed.owner, inserComma));
-                                }
-                            }else{
-                                if ( index > 0 && index < comObj.args.length){
-                                    // do something for VarSet, VarDef variable type.
-                                    returnType = comObj.args[index].type;
+                    if (parsed.parsedObj.type === zparse.ZParsedType.string){
+                        let parentParsed = parsed.parsedObj.scope.parent;
+                        if (parentParsed && parentParsed.owner){
+                            // this is a command inside scope.
+                            let parentCmd = parentParsed.owner; 
+                            let cmdFile = cmdArgFilename[parentCmd.commandName];
+                            if (cmdFile){
+                                let index = parentCmd.insideScope.scopes.indexOf(parsed.parsedObj.scope);
+                                if (index === cmdFile.id){
+                                    let stringVal = (<zparse.ZParsedString>parsed.parsedObj).getStringValue();
+                                    resolve(getRelativePath(stringVal, parser.document.fileName, cmdFile));
                                 }
                             }
                         }
-                    }
+                        resolve(null);
 
-                    if (parsed.parsedObj.type === zparse.ZParsedType.command){
+                    }
+                    if (parsed.parsedObj.type === zparse.ZParsedType.command || parsed.parsedObj.type === zparse.ZParsedType.htagGet){
                         let command = parsed.parsedObj as zparse.ZParsedCommand;
                         
+                        let parentParsed = parsed.parsedObj.scope.parent;
+                        let returnType = ZArgType.any;
+                        if (parentParsed && parentParsed.owner){
+                            // this is a command inside scope.
+                            let commandName = parentParsed.owner.commandName;
+                            let comObj = zScriptCmds[commandName];
+                            if (comObj){
+                                let index = parentParsed.owner.insideScope.scopes.indexOf(parsed.parsedObj.scope);
+                                if (commandName === 'VarSet' || commandName === 'VarDef'){
+                                    // htag var or var command,
+                                    if (command.commandName === 'Var'){
+                                        resolve(addVariableTypeForVarSet(parser, parsed, parentParsed.owner));
+                                    }else{
+                                        if (index === 2 && parsed.index === 0){
+                                            resolve(addFunctionTypeForVarSet(parser, parsed, parentParsed.owner, inserComma));
+                                        }
+                                    }
+                                }else{
+                                    index -= 1;
+                                    if ( index > 0 && index < comObj.args.length){
+                                        returnType = comObj.args[index].type;
+                                    }
+                                }
+                            } 
+                        }
+
                         if (parsed.index >= 3){
                             if (command.commandName === "RoutineDef"){
                                     addSnippetType(out);
@@ -289,7 +442,10 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                                 addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, null, returnType);
                             }
                         }else{
-                            // check for what the command want has an argument
+                            if (parsed.index === 2 && (command.commandName === 'VarSet' || command.commandName === 'VarDef')){
+                                resolve(addVariableTypeForVarSet(parser, parsed, command));
+                            }
+
                             let argType = command.getCommandArgsType(parsed.index);
                             if (argType === undefined){
                                 argType = ZArgType.any;

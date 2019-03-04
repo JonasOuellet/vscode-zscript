@@ -1,8 +1,4 @@
 1 - command that has color parameters:  NoteIButton, Note, NoteISwitch
     a - Check for color provider "registerColorProvider"
 
-2 - Val, strange command.
-
 3 - Double check var argument where I put a string parameters and it should be number (variable number)
-
-4 - autocomplete path when using zscript insert  

@@ -34,16 +34,16 @@
             ],
             "preLaunchTask": "npm: watch"
         },
-        // {
-        //     "type": "node",
-        //     "request": "launch",
-        //     "name": "Generate Cmds List",
-        //     "program": "${workspaceFolder}/out/dev/genCmdList.js",
-        //     "outFiles": [
-        //         "${workspaceFolder}/out/**/*.js"
-        //     ],
-        //     "preLaunchTask": "npm: watch"
-        // },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Generate Cmds Index",
+            "program": "${workspaceFolder}/out/dev/genCommandIndex.js",
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm: watch"
+        },
         {
             "type": "node",
             "request": "launch",

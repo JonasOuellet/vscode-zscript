@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerHoverProvider(ZScriptDocSelector, hoverProvider));
 
     let completionProvider = new ZCompletionProver(parser);
-    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ZScriptDocSelector, completionProvider, '[', '<', "*"));
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ZScriptDocSelector, completionProvider, '[', '<', "*", '#'));
 
     let definitionProvider = new ZDefinitionProvider(parser);
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(ZScriptDocSelector, definitionProvider));

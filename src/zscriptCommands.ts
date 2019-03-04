@@ -1605,7 +1605,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
    { syntax: '[%s, %s]',
      description: 'Evaluates the input and returns a numerical value Output: Value of the named variable',
      example: 'Example:\n\n<code>[Val, (xPos*2)+4]</code>\n\nreturns the value of variable “xPos” multiplied by 2, then added to 4.',
-     args: [ { name: 'name', description: 'Variable name', type: ZArgType.numberVar } ],
+     args: [ { name: 'expression', description: 'expression to evaluate', type: ZArgType.numberVar } ],
      level: ZScriptLevel.all,
      return: ZArgType.number },
   Var: 

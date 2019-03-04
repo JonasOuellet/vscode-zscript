@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import { ZArgType, ZScriptLevel, ZCommandObject, ZCommand, ZArg, getCommandDocString, getZCommandFromDocString, isValidVariableType, ZType } from './zCommandUtil';
 import { zScriptCmds ,zMathFns, ZVarTable } from './zscriptCommands';
 import { resolve, dirname, isAbsolute } from "path";
-import { existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
 
 
 export interface IZParser {
@@ -165,7 +165,11 @@ export class ZParsedCommand extends ZParsed {
     }
 
     private initName() {
-        if (this.type !== ZParsedType.mathFn && this.type !== ZParsedType.htagGet){
+        if (this.type !== ZParsedType.mathFn){
+            if (this.type === ZParsedType.htagGet){
+                this.commandName = "Var";
+                return;
+            }
             if (this.insideScope.scopes.length)
             {
                 let curScope = this.insideScope.scopes[0];
@@ -355,7 +359,7 @@ export class ZParsedCommand extends ZParsed {
 }
 
 
-class ZParsedString extends ZParsed {
+export class ZParsedString extends ZParsed {
     constructor(scope: ZScope, parser: ZFileParser, range?: ZRange){
         super(ZParsedType.string, scope, parser, range);
     }
@@ -420,25 +424,32 @@ class ZInsert {
         let fileScope = obj.insideScope.scopes[1];
         if (fileScope){
             let text = fileScope.flow[0];
+            if (!text){
+                return;
+            }
+
             if (text.type === ZParsedType.string){
                 let stringVal = (<ZParsedString>text).getStringValue();
+
+                if (stringVal.length <= 0){
+                    return;
+                }
                 
                 if (isAbsolute(stringVal)){
-                    if (existsSync(stringVal)){
+                    if (existsSync(stringVal) && statSync(stringVal).isFile()){
                         this.filepath = stringVal;
                         this.isValid = true;
                     }
                 }else{
                     let curFolder = dirname(doc.fileName);
                     let filepath = resolve(curFolder, stringVal);
-                    if (existsSync(filepath)){
+                    if (existsSync(filepath) && statSync(filepath).isFile()){
                         this.filepath = filepath;
                         this.isValid = true;
                     }
                 }
             }
         }
-        return "";
     }
 }
 
@@ -811,7 +822,11 @@ export class ZFileParser {
             }
 
             if (c === '#') {
-                let command = this._parseCommand(pos, scope, ' ', "", ZParsedType.htagGet);
+                let comScope = new ZScope(scope, pos);
+                let varname = this._parseText(scope, pos + 1);
+                comScope.add(varname.zText);
+                comScope.range.end = varname.zText.range.end;
+                let command = new ZParsedCommand(scope, comScope, this, comScope.range, "Var", ZParsedType.htagGet);
                 scope.add(command);
                 pos = command.range.end + 1;
                 continue;
@@ -973,7 +988,7 @@ export class ZFileParser {
         this.insert = [];
         this.variablesObj = {};
 
-        await this._recursiveVarUpdate(this.scope);
+        await this._recursiveVarUpdate(this.scope, null);
 
         return this;
      }
@@ -1001,7 +1016,7 @@ export class ZFileParser {
                        
                     } else {
 
-                        let zvar = new ZVariable(curCommand, this, type);
+                        let zvar = new ZVariable(curCommand, this, <number>type);
                         // Check if varname is valid
                         if (!zvar.name){
                             f ++;
@@ -1020,18 +1035,16 @@ export class ZFileParser {
 
                         //Check for occurence in the insert
                         if (this.parser){
-                            let x = 0;
-                            while (x < this.insert.length){
+                            for (let insert of this.insert){
                                 // to avoid zscript insert that insert each other 
                                 // it should be an error but to avoid an infinite loop
-                                if (this.document.fileName !== sourcePath){
-                                    let insertDoc = await this.parser.getZFileParserByPath(this.insert[x].filepath);
+                                if (insert.isValid && insert.filepath !== sourcePath){
+                                    let insertDoc = await this.parser.getZFileParserByPath(insert.filepath);
                                     let insertVar = await insertDoc.getVariableByName(zvar.name, undefined, this.document.fileName);
                                     if (insertVar){
                                         add = false;
                                         break;
                                     }
-                                    x ++;     
                                 }
                             }
                         }
@@ -1217,7 +1230,7 @@ export class ZFileParser {
                 if (insert.isValid){
                     // to avoid zscript insert that insert each other 
                     // it should be an error but to avoid an infinite loop
-                    if (this.document.fileName !== sourcePath){
+                    if (insert.filepath !== sourcePath){
                         let fileParser = await this.parser.getZFileParserByPath(insert.filepath);
                         let vars = await fileParser.getVariableByType(type, undefined, this.document.fileName);
                         for (let name in vars){
@@ -1241,7 +1254,7 @@ export class ZFileParser {
                 if (insert.isValid){
                     // to avoid zscript insert that insert each other 
                     // it should be an error but to avoid an infinite loop
-                    if (this.document.fileName !== sourcePath){
+                    if (insert.filepath !== sourcePath){
                         let fileParser = await this.parser.getZFileParserByPath(insert.filepath);
                         let zvar = await fileParser.getVariableByName(name, undefined, this.document.fileName);
                         if (zvar){
