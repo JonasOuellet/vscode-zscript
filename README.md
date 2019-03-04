@@ -81,6 +81,6 @@ Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know 
 
 ## Release Notes
 
-### 0.0.1
+### 1.0.0
 
 Initial release.

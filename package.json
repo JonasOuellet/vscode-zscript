@@ -2,8 +2,8 @@
   "name": "zscript",
   "displayName": "zscript for vsCode",
   "description": "Zscript language support for visual studio code",
-  "version": "0.0.1",
-  "publisher": "JonasOuellet",
+  "version": "1.0.0",
+  "publisher": "ouelletjonathan",
   "engines": {
     "vscode": "^1.30.0"
   },
