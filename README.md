@@ -42,7 +42,6 @@ Provide information about a symbol when hovering it.
 ![hover](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/hover.png)
 
 
-
 ### Variables 
 
 * Display all the variables in the file.

@@ -2,7 +2,7 @@
   "name": "zscript",
   "displayName": "zscript for vsCode",
   "description": "Zscript language support for visual studio code",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "ouelletjonathan",
   "engines": {
     "vscode": "^1.30.0"
@@ -84,15 +84,15 @@
         "title": "ZScript: Uninstall File Icon"
       }
     ],
-    "configuration":[
+    "configuration": [
       {
         "title": "ZScript",
         "properties": {
-           "zscript.autoComplete.insertComma": {
-              "type":"boolean",
-              "default": true,
-              "description": "Add comma and space when autocompleting a zscript command"
-           }
+          "zscript.autoComplete.insertComma": {
+            "type": "boolean",
+            "default": true,
+            "description": "Add comma and space when autocompleting a zscript command"
+          }
         }
       }
     ]
@@ -114,6 +114,5 @@
     "@types/jsdom": "^12.2.1",
     "@types/opn": "^5.1.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
