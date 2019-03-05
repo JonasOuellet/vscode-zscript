@@ -24,20 +24,17 @@ ZScript language support for VS Code
 
 ![routine_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/routine_auto.gif)
 
-
 ### ZCommand Signature
 
 Display information about each command argument (type, description)
 
 ![signature](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/signature.gif)
 
-
 ### Hover
 
 Provide information about a symbol when hovering it.
 
 ![hover](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/hover.png)
-
 
 ### Variables 
 
@@ -77,15 +74,16 @@ Autocomplete will display variable defined in the inserted file.
 
 ### Color Provider
 
-`Implemented in 1.0.2` Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know what the color is without looking somewhere else. Hopefully visual studio offer to provide color picker with `ColorProvider`.
+`Implemented in 1.1.0` Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know what the color is without looking somewhere else. Hopefully visual studio offer to provide color picker with `ColorProvider`.
 
 ### Linter implementation
 
 Implement a linter to display some potential error.
 
+
 ## Release Notes
 
-### 1.0.2
+### 1.1.0
 
 Implementation of ColorProvider.
 
