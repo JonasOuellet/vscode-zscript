@@ -1098,6 +1098,28 @@ export class ZFileParser {
         return elem.getText();
     }
     
+    public getAllZParsedTypes(type: ZParsedType): ZParsed[]{
+        return this._recursiveGetParsedText(this.scope, type);
+    }
+
+    private _recursiveGetParsedText(scope: ZScope, type: ZParsedType): ZParsed[] {
+        let out: ZParsed[] = [];
+        
+        for (let p of scope.flow){
+            if (p.type === type){
+                out.push(p);
+            }
+
+            if (p.type === ZParsedType.command || p.type === ZParsedType.mathFn){
+                for (let s of (<ZParsedCommand>p).insideScope.scopes){
+                    out.push(...this._recursiveGetParsedText(s, type));
+                }  
+            }
+        }
+
+        return out;
+    }
+
     /**
      * Return the ZParsed obj at the current position, Return null if the position is not on a ZParsed
      * @param position Position in the document

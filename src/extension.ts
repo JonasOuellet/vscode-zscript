@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ZHoverProvider, ZCompletionProver, ZDefinitionProvider, ZSignatureProvider, 
-    ZDocumentSymbolProvider } from "./zProviders";
+    ZDocumentSymbolProvider, ZColorProvider } from "./zProviders";
 import { installIcon, uninstallIcon } from "./install_icon";
 import { ZParser } from './zParser';
 
@@ -48,6 +48,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     let documentSymbolsProvider = new ZDocumentSymbolProvider(parser);
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ZScriptDocSelector, documentSymbolsProvider));
+
+    let colorProvier = new ZColorProvider(parser);
+    context.subscriptions.push(vscode.languages.registerColorProvider(ZScriptDocSelector, colorProvier));
 
     context.subscriptions.push(parser);
 }

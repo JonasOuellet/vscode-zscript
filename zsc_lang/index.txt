@@ -785,7 +785,7 @@ hRotateCenter, vRotateCenter]
 
 /**
 * Returns the current value of a ZBrush or ZScript interface item Output: The item value
-* @param path: (number) - Interface item path
+* @param path: (string) - Interface item path
 * return (number)
 * 
 * Example:
@@ -798,7 +798,7 @@ hRotateCenter, vRotateCenter]
 
 /**
 * Returns the status flags of the specified interface item Output: The flags
-* @param path: (number) - Interface item path
+* @param path: (string) - Interface item path
 * return (number)
 * 
 * Example:
@@ -1833,7 +1833,7 @@ isDisabled]
 
 /**
 * Defines a variable (advised Top Level).
-* @param name: (string) - Variable name
+* @param name: (anyVar) - Variable name
 * @param value: (any) - Variable defaultValue
 * 
 * Example:
@@ -1851,7 +1851,7 @@ isDisabled]
 
 /**
 * Sets the value of a named variable (can be placed anywhere).
-* @param name: (string) - Variable name
+* @param name: (anyVar) - Variable name
 * @param value: (any) - New Value
 * 
 * Example:
@@ -1885,7 +1885,7 @@ isDisabled]
 
 /**
 * Loads variable/s from a file Output: Number of loaded or verfied values
-* @param name: (string) - Variable name
+* @param name: (anyVar) - Variable name
 * @param filename: (string) - FileName
 * @param onlyVerify: (number) - Verify only (1:Only Verify that a proper saved variable file
 * exists, 0:(default)Verifies and loads values)
@@ -1901,7 +1901,7 @@ isDisabled]
 
 /**
 * Saves variable value/s to file Output: Number of saved values
-* @param name: (string) - Variable name
+* @param name: (anyVar) - Variable name
 * @param FileName: (string) - FileName
 * return (number)
 * 
@@ -2309,7 +2309,7 @@ optStr10, optStr11, optStr12]
 
 /**
 * Evaluates the input and returns a numerical value Output: Value of the named variable
-* @param name: (numberVar) - Variable name
+* @param expression: (numberVar) - expression to evaluate
 * return (number)
 * 
 * Example:
@@ -2318,7 +2318,7 @@ optStr10, optStr11, optStr12]
 * 
 * returns the value of variable “xPos” multiplied by 2, then added to 4.
 */
-[Val, name]
+[Val, expression]
 
 /**
 * Gets the value of a named variable Output: Value of the named variable

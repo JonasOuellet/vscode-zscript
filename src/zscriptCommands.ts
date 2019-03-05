@@ -603,7 +603,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Returns the current value of a ZBrush or ZScript interface item Output: The item value',
      example: 'Example:\n\n<code>[IGet, Draw:Width]</code>\n\nReturns the current value of the Width slider in the Draw menu',
      args: 
-      [ { name: 'path', type: ZArgType.number,
+      [ { name: 'path', type: ZArgType.string,
           description: 'Interface item path' } ],
      level: ZScriptLevel.all,
      return: ZArgType.number },
@@ -612,7 +612,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      description: 'Returns the status flags of the specified interface item Output: The flags',
      example: 'Example:\n\n<code>[IGetFlags, windowID]</code>\n\nReturns the info of specified windowID interface item',
      args: 
-      [ { name: 'path', type: ZArgType.number,
+      [ { name: 'path', type: ZArgType.string,
           description: 'Interface item path' } ],
      level: ZScriptLevel.all,
      return: ZArgType.number },

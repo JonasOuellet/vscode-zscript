@@ -13,18 +13,14 @@ ZScript language support for VS Code
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
 ### Intelligent autocomplete
 
-* Only display the valid variable type
-* Path auto complete for command that require path (ex: `<zscriptinsert, "myScript.txt">`)
+* Provide valid zcommand name
+* Provide the valid variable type
+* Provide auto complete for command that require path (ex: `<zscriptinsert, "myScript.txt">`)
 ![zscriptinsert_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/zscriptinsert_auto.png)
-* Routine definition comment
-
-* Routine definition arg type
+* Provide routine definition comment
+* Provide routine definition arg type
 
 ![routine_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/routine_auto.gif)
 
@@ -34,6 +30,7 @@ For example if there is an image subfolder under your extension project workspac
 Display information about each command argument (type, description)
 
 ![signature](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/signature.gif)
+
 
 ### Hover
 
@@ -71,14 +68,26 @@ Autocomplete will display variable defined in the inserted file.
 * `ZScript: Install File Icon` Display the zbrush icon for zscript files.![zscript_file_icon](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/zscript_file_icon.png)
 * `ZScript: Uninstall File Icon` Remove the zscript icon display.
 
+### Color support
+
+![colorProvider](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/colorProvider.gif)
+
 
 ## Future implementation
 
 ### Color Provider
 
-Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know what the color is without looking somewhere else. Hopefully visual studio offer to provide color picker with `ColorProvider`.
+`Implemented in 1.0.2` Some command require hexadecimal color (ex: 0xffffff). It is quite hard to know what the color is without looking somewhere else. Hopefully visual studio offer to provide color picker with `ColorProvider`.
+
+### Linter implementation
+
+Implement a linter to display some potential error.
 
 ## Release Notes
+
+### 1.0.2
+
+Implementation of ColorProvider.
 
 ### 1.0.0
 
