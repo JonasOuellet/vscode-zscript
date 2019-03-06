@@ -1,4 +1,4 @@
-# vscode-zscript
+# ZScript <font size="2"><em>(ZBrush scripting language)</em></font>
 
 [![Zbrush link](https://img.shields.io/badge/ZBrush-ZScript-orange.svg)](http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/)
 [![GitHub issues](https://img.shields.io/github/issues/JonasOuellet/vscode-zscript.svg)](https://github.com/JonasOuellet/vscode-zscript/issues)
@@ -90,8 +90,8 @@ Implement a linter to display some potential error.
 
 ### 1.1.0
 
-Implementation of ColorProvider.
+* Implementation of ColorProvider.
 
 ### 1.0.0
 
-Initial release.
+* Initial release.
