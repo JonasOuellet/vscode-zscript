@@ -1,4 +1,2 @@
-1 - command that has color parameters:  NoteIButton, Note, NoteISwitch
-    a - Check for color provider "registerColorProvider"
-
-3 - Double check var argument where I put a string parameters and it should be number (variable number)
+1 - Rename provider
+2 - Reference provider

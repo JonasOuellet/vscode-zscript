@@ -2,14 +2,18 @@ import { ZHoverProvider } from "./zHoverProvider";
 import { ZCompletionProver } from './zCompletionProvider';
 import { ZDefinitionProvider } from './zDefinitionProvider';
 import { ZSignatureProvider } from './zSignatureProvider';
-import { ZDocumentSymbolProvider } from './zDocumentSymbolsProvider';
+import { ZSymbolProvider } from './zSymbolsProvider';
 import { ZColorProvider } from './zColorProvider';
+import { ZFoldingRangeProvider } from './zFoldingRangeProvider';
+import { ZDocumentLinkProvider } from './zDocumentLinkProvider';
 
 export { 
     ZHoverProvider, 
     ZCompletionProver, 
     ZDefinitionProvider, 
     ZSignatureProvider,
-    ZDocumentSymbolProvider,
-    ZColorProvider 
+    ZSymbolProvider,
+    ZColorProvider,
+    ZFoldingRangeProvider,
+    ZDocumentLinkProvider
 };

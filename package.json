@@ -1,7 +1,7 @@
 {
   "name": "zscript",
-  "displayName": "zscript for vsCode",
-  "description": "Zscript language support for visual studio code",
+  "displayName": "ZScript",
+  "description": "ZBrush scripting language support for visual studio code",
   "version": "1.1.2",
   "publisher": "ouelletjonathan",
   "engines": {

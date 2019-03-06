@@ -83,6 +83,11 @@ Implement a linter to display some potential error.
 
 ## Release Notes
 
+### 1.2.0
+* Implementation of [workspace symbol providers](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)
+* Implementation of folding ranges
+* Implementation of document link for `zscriptinset` command
+
 ### 1.1.0
 
 Implementation of ColorProvider.

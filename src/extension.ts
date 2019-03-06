@@ -1,8 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ZHoverProvider, ZCompletionProver, ZDefinitionProvider, ZSignatureProvider, 
-    ZDocumentSymbolProvider, ZColorProvider } from "./zProviders";
+import * as zproviders from "./zProviders";
 import { installIcon, uninstallIcon } from "./install_icon";
 import { ZParser } from './zParser';
 
@@ -34,23 +33,30 @@ export function activate(context: vscode.ExtensionContext) {
     */
     let parser = new ZParser();
 
-    let hoverProvider = new ZHoverProvider(parser);
+    let hoverProvider = new zproviders.ZHoverProvider(parser);
     context.subscriptions.push(vscode.languages.registerHoverProvider(ZScriptDocSelector, hoverProvider));
 
-    let completionProvider = new ZCompletionProver(parser);
+    let completionProvider = new zproviders.ZCompletionProver(parser);
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ZScriptDocSelector, completionProvider, '[', '<', "*", '#'));
 
-    let definitionProvider = new ZDefinitionProvider(parser);
+    let definitionProvider = new zproviders.ZDefinitionProvider(parser);
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(ZScriptDocSelector, definitionProvider));
 
-    let signatureProvider = new ZSignatureProvider(parser);
+    let signatureProvider = new zproviders.ZSignatureProvider(parser);
     context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(ZScriptDocSelector, signatureProvider, ',', '('));
 
-    let documentSymbolsProvider = new ZDocumentSymbolProvider(parser);
+    let documentSymbolsProvider = new zproviders.ZSymbolProvider(parser);
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ZScriptDocSelector, documentSymbolsProvider));
+    context.subscriptions.push(vscode.languages.registerWorkspaceSymbolProvider(documentSymbolsProvider));
 
-    let colorProvier = new ZColorProvider(parser);
+    let colorProvier = new zproviders.ZColorProvider(parser);
     context.subscriptions.push(vscode.languages.registerColorProvider(ZScriptDocSelector, colorProvier));
+
+    let foldingProvider = new zproviders.ZFoldingRangeProvider(parser);
+    context.subscriptions.push(vscode.languages.registerFoldingRangeProvider(ZScriptDocSelector, foldingProvider));
+
+    let docLinkProvider = new zproviders.ZDocumentLinkProvider(parser);
+    context.subscriptions.push(vscode.languages.registerDocumentLinkProvider(ZScriptDocSelector, docLinkProvider));
 
     context.subscriptions.push(parser);
 }

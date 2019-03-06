@@ -35,7 +35,6 @@ export class ZParser implements IZParser {
         }
     }
 
-
     dispose(){
         this._disposable.dispose();
     }

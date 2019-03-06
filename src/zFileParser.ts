@@ -364,6 +364,10 @@ export class ZParsedString extends ZParsed {
         super(ZParsedType.string, scope, parser, range);
     }
 
+    getStringValueRange(document: vscode.TextDocument): vscode.Range {
+        return new ZRange(this.range.start + 1, this.range.end - 1).convertToVsCodeRange(document);
+    }
+
     getStringValue(): string {
         // exclude the quotes.
         return this.parser.text.slice(this.range.start + 1, this.range.end);
