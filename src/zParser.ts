@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import * as path from "path";
 import { ZIndexParser } from './zIndexParser';
 import { ZFileParser, IZParser } from './zFileParser';
+import { join, extname } from 'path';
+import { readdirSync, statSync } from 'fs';
 
 
 interface ZParsedDocument {
@@ -103,5 +105,46 @@ export class ZParser implements IZParser {
         }
 
         return parsed.prom;
+    }
+
+    private _recursiveGetZbrushFile(folder: string): string[] {
+        let out: string[] = [];
+
+        let paths = readdirSync(folder);
+        for (let filename of paths) {
+            let fpath = join(folder, filename);
+            if(extname(filename).toLowerCase() === '.txt'){
+                out.push(fpath);
+            }else if (statSync(fpath).isDirectory()){
+                out.push(...this._recursiveGetZbrushFile(fpath));
+            }
+        }
+        return out;
+    }
+
+    getWorkspaceZFileParsers(): Promise<ZFileParser>[] {
+        let out: Promise<ZFileParser>[] = [];
+
+        let workspacePath = vscode.workspace.rootPath;
+        if (workspacePath){
+            let files = this._recursiveGetZbrushFile(workspacePath);
+            for (let f of files){
+                out.push(this.getZFileParserByPath(f));
+            }
+        }
+        return out;
+    }
+
+    getWorkspaceZFileParsersCB<T>(onThen: (parser: ZFileParser)=>T, onCatch: (reason: any)=>T): Promise<T>[] {
+        let out: Promise<T>[] = [];
+
+        let workspacePath = vscode.workspace.rootPath;
+        if (workspacePath){
+            let files = this._recursiveGetZbrushFile(workspacePath);
+            for (let f of files){
+                out.push(this.getZFileParserByPath(f).then(onThen, onCatch));
+            }
+        }
+        return out;
     }
 }

@@ -83,6 +83,11 @@ Implement a linter to display some potential error.
 
 ## Release Notes
 
+### 1.3.0
+* Implemented [rename](https://code.visualstudio.com/docs/editor/editingevolved#_rename-symbol)
+* Implemented [find references](https://code.visualstudio.com/docs/editor/editingevolved#_peek)
+
+
 ### 1.2.0
 * Implementation of [workspace symbol providers](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)
 * Implementation of folding ranges

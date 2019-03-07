@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { ZType } from '../zCommandUtil';
 import { ZParser } from '../zParser';
-import { join, extname } from 'path';
-import { readdirSync, statSync } from 'fs';
+import { ZParsedText } from '../zFileParser';
 
-export class ZSymbolProvider implements vscode.DocumentSymbolProvider, vscode.WorkspaceSymbolProvider {
+
+export class ZSymbolProvider implements vscode.DocumentSymbolProvider, vscode.WorkspaceSymbolProvider,
+vscode.ReferenceProvider, vscode.RenameProvider {
 
     parser: ZParser;
 
@@ -47,56 +48,119 @@ export class ZSymbolProvider implements vscode.DocumentSymbolProvider, vscode.Wo
         });
     }
 
-    recursiveGetZbrushFile(folder: string): string[] {
-        let out: string[] = [];
+    provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[]>{
+        let promises = this.parser.getWorkspaceZFileParsersCB<vscode.SymbolInformation[]>((fileParser) => {
+            let symbols: vscode.SymbolInformation[] = [];
 
-        let paths = readdirSync(folder);
-        for (let filename of paths) {
-            let fpath = join(folder, filename);
-            if(extname(filename).toLowerCase() === '.txt'){
-                out.push(fpath);
-            }else if (statSync(fpath).isDirectory()){
-                out.push(...this.recursiveGetZbrushFile(fpath));
+            for (let v of fileParser.variables){
+                if (v.name.toLowerCase().startsWith(query)){
+                    let type = v.type === ZType.routine ? vscode.SymbolKind.Function : vscode.SymbolKind.Variable;
+
+                    let symbol = new vscode.SymbolInformation(v.name, type, v.name,
+                        new vscode.Location(fileParser.document.uri, v.range.declaration));
+    
+                    symbols.push(symbol);
+                }
             }
-        }
+            return symbols;
+        }, (reason) => {
+            return [];
+        });
 
-        return out;
+        return Promise.all(promises).then((results) => {
+            let symbols: vscode.SymbolInformation[] = [];
+            return symbols.concat(...results);
+        });
     }
 
-    provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[]>{
-        let workspacePath = vscode.workspace.rootPath;
-        if (workspacePath){
-            let files = this.recursiveGetZbrushFile(workspacePath);
+    async getZParsedTextForVariable(document: vscode.TextDocument, position: vscode.Position, concat=true): Promise<ZParsedText[][]>{
+        let word = document.getText(document.getWordRangeAtPosition(position));
 
-            let promises: Promise<vscode.SymbolInformation[]>[] = [];
-            for (let f of files){
-                let prom = this.parser.getZFileParserByPath(f).then((fileParser) => {
-                    let symbols: vscode.SymbolInformation[] = [];
+        if (word.startsWith('#')){
+            word = word.slice(1);
+        }
 
-                    for (let v of fileParser.variables){
-                        if (v.name.toLowerCase().startsWith(query)){
-                            let type = v.type === ZType.routine ? vscode.SymbolKind.Function : vscode.SymbolKind.Variable;
+        let fileParser = await this.parser.getZFileParser(document);
+        let parsedPos = fileParser.getZParsedForPosition(position);
 
-                            let symbol = new vscode.SymbolInformation(v.name, type, v.name,
-                                new vscode.Location(fileParser.document.uri, v.range.declaration));
-            
-                            symbols.push(symbol);
+        if (parsedPos) {
+            let arg = fileParser.getArgsByName(word, parsedPos.parsedObj.scope);
+            if (arg){
+                return [fileParser.getVariableOccurences(word, arg.insideScope)];
+            }
+
+            let zvar = await fileParser.getVariableByName(word);
+            if (zvar){
+                let doc = zvar.parser.document;
+                let proms = this.parser.getWorkspaceZFileParsersCB<ZParsedText[]>((parser) => {
+                    // check if this document is the document where zvar is declared
+                    if (parser.document.fileName === doc.fileName ){
+                        return parser.getVariableOccurences(word);
+                    }else{
+                        // check if it has the file inserted
+                        for (let insert of parser.insert){
+                            if (insert.filepath === doc.fileName){
+                                return parser.getVariableOccurences(word);
+                            }
                         }
                     }
-                    return symbols;
-                }).catch((reason)=> {
+                    return [];
+                }, (reason) => {
                     return [];
                 });
 
-                promises.push(prom);
+                return Promise.all(proms);
+            }
+        }
+
+        return [];
+    }
+
+    provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): 
+    vscode.ProviderResult<vscode.Location[]> {
+
+        return this.getZParsedTextForVariable(document, position).then((parsedText) => {
+            let out: vscode.Location[] = [];
+            for (let curDoc of parsedText){
+                if (curDoc.length){
+                    let doc = curDoc[0].parser.document;
+                    let uri = vscode.Uri.file(doc.fileName);
+                    for (let t of curDoc){
+                        out.push(new vscode.Location(uri, t.range.convertToVsCodeRange(doc)));
+                    }
+                }
             }
 
-            return Promise.all(promises).then((results) => {
-                let symbols: vscode.SymbolInformation[] = [];
-                return symbols.concat(...results);
-            });
-        }
+            return out;
+        }, (reason) => {
+            return [];
+        });
+
+    }
+
+    provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): 
+    vscode.ProviderResult<vscode.WorkspaceEdit>{
         
-        return null;
+        return this.getZParsedTextForVariable(document, position).then((parsedText) => {
+            let out = new vscode.WorkspaceEdit();
+            for (let curDoc of parsedText){
+                let x = curDoc.length - 1;
+                if (x >= 0){
+                    let doc = curDoc[0].parser.document;
+                    let uri = vscode.Uri.file(doc.fileName);
+                     
+                    // go in reverse to do the right transform
+                    while (x >= 0){
+                        let p = curDoc[x];
+                        out.replace(uri, p.range.convertToVsCodeRange(doc), newName);
+                        x--;
+                    }
+                }
+            }
+            return out;
+        }, (reason) => {
+            return null;
+        });
+
     }
 }

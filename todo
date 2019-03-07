@@ -1,2 +1,2 @@
-1 - Rename provider
-2 - Reference provider
+1 - check for occurence in "docstring" when renaming the variable
+2 - check for support of zinsert of zinsert

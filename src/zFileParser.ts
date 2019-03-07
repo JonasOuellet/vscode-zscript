@@ -409,6 +409,7 @@ export interface ZCommandListObject {
     [key: string]: ZParsedCommand;
 }
 
+
 class ZInsert {
     parsedObj: ZParsedCommand;
 
@@ -473,9 +474,6 @@ export class ZVariable {
     isArray = false;
 
     name: string;
-
-    // when the same variable appear multiple time
-    // occurences: ZVariable[] = [];
 
     parser: ZFileParser;
 
@@ -632,6 +630,20 @@ export class ZVariable {
             str += ')';
         }
         return str;
+    }
+
+    getZParsed(): ZParsedText | null {
+        let scope = this.parsedObj.insideScope;
+        if (scope.scopes.length >= 2) {
+            let nameScope = scope.scopes[1];
+            if (nameScope.flow.length){
+                let parsed = nameScope.flow[0];
+                if (parsed && parsed.type === ZParsedType.lText){
+                    return parsed;
+                }
+            }
+        }
+        return null;
     }
 }
 
@@ -997,7 +1009,7 @@ export class ZFileParser {
         return this;
      }
 
-    async _recursiveVarUpdate(scope: ZScope, parent: ZVariable | null = null, sourcePath?: string) {
+    async _recursiveVarUpdate(scope: ZScope, parent: ZVariable | null = null, sourcePath?: string, topCommands?: ZParsedCommand []) {
         let f = 0;
         while (f < scope.flow.length){
             let parsed = scope.flow[f];
@@ -1028,12 +1040,13 @@ export class ZFileParser {
                         }
 
                         let add = true;
-    
-                        // Check if this variable is in the command Args
-                        // it will only have a parent if its in a routineDef
-                        if (parent && parent.parsedObj.argsCount){
-                            if (parent.parsedObj.args.hasOwnProperty(zvar.name)){
-                                add = false;
+
+                        if (topCommands){
+                            for (let cmd of topCommands){
+                                if (cmd.args.hasOwnProperty(zvar.name)){
+                                    add = false;
+                                    break;
+                                }
                             }
                         }
 
@@ -1062,6 +1075,7 @@ export class ZFileParser {
                                     add = false;
                                 }
                             }
+                            
                             if (add) {
                                 // check in global scopes:
                                 if (this.variablesObj.hasOwnProperty(zvar.name)){
@@ -1081,7 +1095,11 @@ export class ZFileParser {
                             if (type === ZArgType.routine){
                                 // command group is the 3 elem in the routineDef command
                                 if (curCommand.insideScope.scopes.length >= 3){
-                                    await this._recursiveVarUpdate(curCommand.insideScope.scopes[2], zvar);
+                                    if (topCommands === undefined){
+                                        topCommands = [];
+                                    }
+                                    let cmd = [curCommand, ...topCommands];
+                                    await this._recursiveVarUpdate(curCommand.insideScope.scopes[2], zvar, undefined, cmd);
                                 }
                             }
                         }
@@ -1089,7 +1107,11 @@ export class ZFileParser {
                 }else{
                     let cm = 0;
                     while (cm < curCommand.insideScope.scopes.length){
-                        await this._recursiveVarUpdate(curCommand.insideScope.scopes[cm], parent);
+                        if (topCommands === undefined){
+                            topCommands = [];
+                        }
+                        let cmd = [curCommand, ...topCommands];
+                        await this._recursiveVarUpdate(curCommand.insideScope.scopes[cm], parent, undefined, cmd);
                         cm++;
                     }
                 }
@@ -1103,10 +1125,10 @@ export class ZFileParser {
     }
     
     public getAllZParsedTypes(type: ZParsedType): ZParsed[]{
-        return this._recursiveGetParsedText(this.scope, type);
+        return this._recursiveGetParsed(this.scope, type);
     }
 
-    private _recursiveGetParsedText(scope: ZScope, type: ZParsedType): ZParsed[] {
+    private _recursiveGetParsed(scope: ZScope, type: ZParsedType): ZParsed[] {
         let out: ZParsed[] = [];
         
         for (let p of scope.flow){
@@ -1116,7 +1138,7 @@ export class ZFileParser {
 
             if (p.type === ZParsedType.command || p.type === ZParsedType.mathFn){
                 for (let s of (<ZParsedCommand>p).insideScope.scopes){
-                    out.push(...this._recursiveGetParsedText(s, type));
+                    out.push(...this._recursiveGetParsed(s, type));
                 }  
             }
         }
@@ -1338,5 +1360,45 @@ export class ZFileParser {
         }
 
         return null;
+    }
+
+    getVariableOccurences(varName: string, scope?: ZScope, isCommand=true): ZParsedText[]{
+        if (scope === undefined){
+            scope = this.scope;
+        }else if (isCommand){
+            let out: ZParsedText[] = [];
+
+            for (let scop of scope.scopes){
+                out.push(...this._recursiveGetVariableOcc(varName, scop));
+            }
+            return out;
+        }
+
+        return this._recursiveGetVariableOcc(varName, scope);
+    }
+
+    private _recursiveGetVariableOcc(varName: string, scope: ZScope): ZParsedText[] {
+        let out: ZParsedText[] = [];
+        for (let flow of scope.flow){
+            if (flow.type === ZParsedType.htagGet){
+                let parsedText = (<ZParsedCommand>flow).insideScope.flow[0] as ZParsedText;
+                if (parsedText && parsedText.getText() === varName){
+                    out.push(parsedText);
+                }
+            }
+            else if (flow.type === ZParsedType.lText){
+                if (flow.getText() === varName){
+                    out.push(flow);
+                }
+            }
+            else if (flow.type === ZParsedType.command || flow.type === ZParsedType.mathFn){
+                let command = flow as ZParsedCommand;
+                for (let scop of command.insideScope.scopes){
+                    out.push(...this._recursiveGetVariableOcc(varName, scop));
+                }
+
+            }
+        }
+        return out;
     }
 }

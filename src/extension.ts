@@ -48,7 +48,9 @@ export function activate(context: vscode.ExtensionContext) {
     let documentSymbolsProvider = new zproviders.ZSymbolProvider(parser);
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ZScriptDocSelector, documentSymbolsProvider));
     context.subscriptions.push(vscode.languages.registerWorkspaceSymbolProvider(documentSymbolsProvider));
-
+    context.subscriptions.push(vscode.languages.registerReferenceProvider(ZScriptDocSelector, documentSymbolsProvider));
+    context.subscriptions.push(vscode.languages.registerRenameProvider(ZScriptDocSelector, documentSymbolsProvider));
+    
     let colorProvier = new zproviders.ZColorProvider(parser);
     context.subscriptions.push(vscode.languages.registerColorProvider(ZScriptDocSelector, colorProvier));
 
@@ -57,6 +59,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     let docLinkProvider = new zproviders.ZDocumentLinkProvider(parser);
     context.subscriptions.push(vscode.languages.registerDocumentLinkProvider(ZScriptDocSelector, docLinkProvider));
+
+    // let highlightProvider = new zproviders.ZHighLightProvider(parser);
+    // context.subscriptions.push(vscode.languages.registerDocumentHighlightProvider(ZScriptDocSelector, highlightProvider));
 
     context.subscriptions.push(parser);
 }
