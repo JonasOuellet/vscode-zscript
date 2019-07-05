@@ -6,6 +6,7 @@ import { ZParser } from '../zParser';
 import * as path from 'path';
 import { readdirSync, statSync } from 'fs';
 
+
 interface CmdWithFilename {
     id: number;
     ext: string[];
@@ -80,13 +81,6 @@ let cmdToExecAfter = {
     command: "editor.action.triggerParameterHints"
 };
 
-/* Add autto ", " for automplete of variable ???
- */
-// function doNeedToInsertComma(zcommand: ZCommand, command: zparse.ZParsedCommand){
-//     let zscriptConfig = vscode.workspace.getConfiguration('zscript');
-//     let inserComma = zscriptConfig.get<Boolean>("autoComplete.insertComma");
-// }
-
 
 function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj: ZCommandObject, currentArgsIndex: number, 
     inserComma:Boolean=false, specificCommand: {} | null = null, returnType:ZArgType = ZArgType.any){
@@ -105,15 +99,17 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
 
         let cur = new vscode.CompletionItem(property, vscode.CompletionItemKind.Method);
         cur.documentation = new vscode.MarkdownString(zConvertHTMLtoMarkdown(currentCommand.description));
-        let argLength = currentCommand.args.length; 
-        if (argLength > 0){
-            if (inserComma && currentArgsIndex < argLength) {
+        if (inserComma){
+            if (currentArgsIndex < currentCommand.args.length) {
                 cur.insertText = property + ', ';
                 cur.command = cmdToExecAfter;
-            }else{
-                cur.commitCharacters = [',', '\s'];
+            }
+        }else{
+            if (currentArgsIndex < currentCommand.args.length) {
+                cur.commitCharacters = [','];
             }
         }
+    
         cur.detail = "(Command)";
         compItem.push(cur);
     }
@@ -298,7 +294,7 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
     
     dirName = path.resolve(dirName, startPath);
 
-    let backDir = new vscode.CompletionItem("../", vscode.CompletionItemKind.Folder);
+    let backDir = new vscode.CompletionItem(".." + path.sep, vscode.CompletionItemKind.Folder);
     out.push(backDir);
 
     let paths = readdirSync(dirName);
@@ -307,7 +303,7 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
 
         let stat = statSync(fpath);
         if (stat.isDirectory()){
-            let comp = new vscode.CompletionItem(filename + '/', vscode.CompletionItemKind.Folder);
+            let comp = new vscode.CompletionItem(filename + path.sep, vscode.CompletionItemKind.Folder);
             comp.command = {
                 title: 'Folder autocomplete',
                 command: "editor.action.triggerSuggest"
@@ -460,6 +456,8 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                     if (parsed.parsedObj.type === zparse.ZParsedType.mathFn){
                         resolve(addVariableByType(out, parser, parsed, ZArgType.number));
                     }
+                }else{
+                    addMathFn(out);
                 }
                 resolve(out);
             }).catch(reason => {

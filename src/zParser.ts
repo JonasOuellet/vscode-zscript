@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from "path";
 import { ZIndexParser } from './zIndexParser';
 import { ZFileParser, IZParser } from './zFileParser';
 import { join, extname } from 'path';
@@ -15,13 +14,10 @@ interface ZParsedDocument {
 
 
 export class ZParser implements IZParser {
-    private _parsedIndex: Promise<ZIndexParser> | null;
     private _parsedDocument: ZParsedDocument = {};
     private _disposable: vscode.Disposable;
 
     constructor(){
-        this._parsedIndex = null;
-
         // subscribe to selection change and editor activation event
         let subscriptions: vscode.Disposable[] = [];
 
@@ -41,21 +37,8 @@ export class ZParser implements IZParser {
         this._disposable.dispose();
     }
 
-    _getIndexFilePath(): string {
-        return path.normalize(path.join(__dirname, '..', 'zsc_lang', "index.txt"));
-    }
-
     async getZIndexParser(): Promise<ZIndexParser> {
-        if (this._parsedIndex === null){
-            let doc = await vscode.workspace.openTextDocument(this._getIndexFilePath());
-            this._parsedIndex = new Promise((resolve, reject) => {
-                let parser = new ZIndexParser(doc);
-                parser.parseDocument();
-                parser.upateCommandObject();
-                resolve(parser);
-            });
-        }
-        return this._parsedIndex;
+        return ZIndexParser.TheOne();
     }
 
     getZFileParser(textDocument: vscode.TextDocument, forceReParsing=false): Promise<ZFileParser> {

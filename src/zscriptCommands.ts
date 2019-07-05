@@ -884,7 +884,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      return: ZArgType.null },
   IShowActions: 
    { syntax: '[%s, %s]',
-     description: 'Temorarily sets the status of ShowActions',
+     description: 'Temporarily sets the status of ShowActions',
      example: 'Example:\n\n<code>[IShowActions, 0]</code>\n\nTemporarily disables ShowActions',
      args: 
       [ { name: 'status', type: ZArgType.number,
@@ -1726,7 +1726,7 @@ export let zScriptCmds: ZCommandObject = { IButton:
      args: 
       [ { name: 'count', description: 'RepeatCount', type: ZArgType.number },
         { name: 'CommandsGroup', description: 'Commands group', type: ZArgType.commandGroup },
-        { name: 'countVar', type: ZArgType.string,
+        { name: 'countVar', type: ZArgType.varName,
           description: 'Optional loop-counter variable (starts at Zero)' } ],
      level: ZScriptLevel.all,
      return: ZArgType.null },

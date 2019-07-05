@@ -48,6 +48,10 @@ async function getSignatureForRoutineCall(parser: zparse.ZFileParser, command: z
 
     if (zvar){
         let zcommand = zvar.parsedObj.parseDocString();
+        if (!zcommand){
+            zcommand = zvar.parsedObj.getZCommand();
+        }
+
         if (zcommand){
             let zobject: ZCommandObject = {};
             let routName = 'RoutineCall, ' + varName;

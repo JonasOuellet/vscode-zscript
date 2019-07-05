@@ -92,6 +92,11 @@
             "type": "boolean",
             "default": true,
             "description": "Add comma and space when autocompleting a zscript command"
+          },
+          "zscript.hover.showDetailedCommandInfo": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show arguments list when hovering a zscript command."
           }
         }
       }

@@ -35,28 +35,40 @@ export class ZHoverProvider implements vscode.HoverProvider {
         let wordRange = document.getWordRangeAtPosition(position);
         let word = document.getText(wordRange);
 
-        let zscriptObj = undefined;
+        let cmd = undefined;
         let title = "";
 
         if ( zScriptCmds.hasOwnProperty(word) ) {
-            zscriptObj = zScriptCmds;
+            cmd = zScriptCmds[word];
             title = "Command: ";
-        }
-
-        if ( zMathFns.hasOwnProperty(word) ) {
-            zscriptObj = zMathFns;
+        }else if( zMathFns.hasOwnProperty(word) ) {
+            cmd = zMathFns[word];
             title = "Math Function: ";
         }
 
-        if (zscriptObj) {
+        if (cmd) {
             let nameString = new vscode.MarkdownString();
             nameString.appendCodeblock(title + word, "zscript");
             let content = [
                 nameString, 
-                zConvertHTMLtoMarkdown(zscriptObj[word].description)
+                zConvertHTMLtoMarkdown(cmd.description)
             ];
-            if (zscriptObj[word].example) {
-                content.push(zConvertHTMLtoMarkdown(zscriptObj[word].example));
+            if (cmd.example) {
+                content.push(zConvertHTMLtoMarkdown(cmd.example));
+            }
+
+            if (cmd.args.length) {
+                let zscriptConfig = vscode.workspace.getConfiguration('zscript');
+                let showArgs = zscriptConfig.get<Boolean>("hover.showDetailedCommandInfo");
+                if (showArgs !== undefined && showArgs) {
+                    let x = 1;
+                    let argsText = "**Args:**";
+                    for (let arg of cmd.args){
+                        argsText += `\n${x}. **${arg.name}** *${ZArgType[arg.type]}*: ${arg.description}`;
+                        x += 1;
+                    }
+                    content.push(argsText);
+                }
             }
 
             return {

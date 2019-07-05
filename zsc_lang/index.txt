@@ -1180,7 +1180,7 @@ hRotateCenter, vRotateCenter]
 [IShow, path, doShowZoomRect, doTargetParentWin]
 
 /**
-* Temorarily sets the status of ShowActions
+* Temporarily sets the status of ShowActions
 * @param status: (number) - The ShowActions status.(0:Disable ShowActions, Positive
 * value:enable show actions, Negative value:Reset ShowActions)
 * 
@@ -2510,7 +2510,7 @@ optStr10, optStr11, optStr12]
 * Repeats execution of the specified commands group
 * @param count: (number) - RepeatCount
 * @param CommandsGroup: (commandGroup) - Commands group
-* @param countVar: (string) - Optional loop-counter variable (starts at Zero)
+* @param countVar: (varName) - Optional loop-counter variable (starts at Zero)
 * 
 * Example:
 * 

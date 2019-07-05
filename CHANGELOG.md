@@ -1,3 +1,9 @@
+## 1.3.1 - 4th July, 2019
+* Display RoutineCall argument name even if there is no docstrings
+* Fix an issue where some command definitions were not found
+* Remove escape character for strings
+* Relative path autocomplete now use one backslash on windows.
+
 ## 1.3.0 - 6th March, 2019
 * Implemented [rename](https://code.visualstudio.com/docs/editor/editingevolved#_rename-symbol)
 * Implemented [find references](https://code.visualstudio.com/docs/editor/editingevolved#_peek)
@@ -16,4 +22,4 @@
 * Fix readme image path to resolve to https
 
 ## 1.0.0 - 4th March, 2019
-* Initial Releaselogin 
+* Initial Release

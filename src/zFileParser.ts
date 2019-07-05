@@ -320,7 +320,7 @@ export class ZParsedCommand extends ZParsed {
         return undefined;
     }
 
-    getZCommand(): ZCommand {
+    getZCommandForDocString(): ZCommand {
         let args: ZArg[] = [];
         
         let x = 2;
@@ -344,7 +344,7 @@ export class ZParsedCommand extends ZParsed {
     }
 
     getDocString() : string {
-        return getCommandDocString(this.getZCommand());
+        return getCommandDocString(this.getZCommandForDocString());
     }
 
     parseDocString(): ZCommand | null {
@@ -354,6 +354,38 @@ export class ZParsedCommand extends ZParsed {
             return getZCommandFromDocString(textComment);
         }
 
+        return null;
+    }
+
+    /**
+     * Will only return a ZCommand if the parsed command is a RoutineDef. 
+     */
+    getZCommand(): ZCommand | null {
+        if (this.commandName === 'RoutineDef'){
+            let args: ZArg[] = [];
+        
+            for(let arg in this.args){
+                args.push({
+                    description: "",
+                    name: arg,
+                    type: <number>this.args[arg].type
+                });
+            }
+            
+            let syntax = '[%s]';
+            if (args.length){
+                syntax = '[%s, %s]';
+            }
+        
+            return {
+                args: args,
+                syntax: syntax,
+                level: ZScriptLevel.all,
+                description: "",
+                return: ZArgType.null,
+                example: ""
+            };
+        }
         return null;
     }
 }
@@ -373,7 +405,6 @@ export class ZParsedString extends ZParsed {
         return this.parser.text.slice(this.range.start + 1, this.range.end);
     }
 }
-
 
 export class ZParsedNumber extends ZParsed {
     isDecimal = false;
@@ -754,7 +785,8 @@ export class ZFileParser {
         let endPos = startPos + 1;
         while ( endPos < text.length) {
             let c = text[endPos];
-            if (c === '"' && text[endPos - 1] !== "\\"){
+            // Removing escape char.
+            if (c === '"' /*&& text[endPos - 1] !== "\\"*/){
                 endPos += 1; // so that when removing one we get the good index
                 break;
             }
@@ -917,7 +949,7 @@ export class ZFileParser {
         return new ZParsedParentheses(scope, inScope, this, new ZRange(pos, endPos));
     }
 
-    _parseText(scope: ZScope, pos: number, endChars=[' ', ']', ',', '(', ')', '[', '/', '\n', '\r']) : ZParsedTextOutput {
+    _parseText(scope: ZScope, pos: number, endChars=[' ', ']', ',', '(', ')', '[', '/', '\n', '\r', '>']) : ZParsedTextOutput {
         let end = pos + 1;
         let endOfText = true;
         let c = '';
@@ -1140,6 +1172,8 @@ export class ZFileParser {
                 for (let s of (<ZParsedCommand>p).insideScope.scopes){
                     out.push(...this._recursiveGetParsed(s, type));
                 }  
+            }else if (p.type === ZParsedType.parentheses){
+                out.push(...this._recursiveGetParsed((<ZParsedParentheses>p).insideScope, type));
             }
         }
 
@@ -1162,7 +1196,7 @@ export class ZFileParser {
             while (x < scope.flow.length) {
                 let flow = scope.flow[x];
                 if (flow.range.isContainingPosition(pos, true)){
-                    // parsed parenthese
+                    
                     if (flow.type === ZParsedType.command || flow.type === ZParsedType.mathFn){
                         let command = flow as ZParsedCommand;
                         let i = 0;
@@ -1173,7 +1207,14 @@ export class ZFileParser {
                             }
                             i++;
                         }
+                    }else if (flow.type === ZParsedType.parentheses){
+                        // parsed parenthese
+                        let parsed = this._recursiveZParsedForPosition(pos, (<ZParsedParentheses>flow).insideScope);
+                        if (parsed){
+                            return parsed;
+                        }
                     }
+
                     return {
                         parsedObj: flow,
                         index: index
@@ -1397,6 +1438,9 @@ export class ZFileParser {
                     out.push(...this._recursiveGetVariableOcc(varName, scop));
                 }
 
+            }
+            else if (flow.type === ZParsedType.parentheses){
+                out.push(...this._recursiveGetVariableOcc(varName, (<ZParsedParentheses>flow).insideScope));
             }
         }
         return out;
