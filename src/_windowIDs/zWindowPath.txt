@@ -1,0 +1,80 @@
+/* Material slider: 28516
+need to check for each material value in the slider.
+*/
+
+[VarDef, currentSize, 0]
+[VarDef, byteOffset, 0]
+
+[RoutineDef, initMem,
+    [If, [MemGetSize, data],
+        [MemDelete, data]
+    ]
+    [MemCreate, data, 10240]
+]
+
+[RoutineDef, writeToFile,
+    // Resize memory to the actual total size so we don't write any empty bits.
+    [MemResize, data, currentSize]
+
+    [MemSaveToFile, data, #filepath, 1]
+
+    [MemDelete, data]
+
+, filepath]
+
+
+[RoutineDef, addLineToMem,
+    [VarSet, line, [StrMerge, input, [StrFromAsc, 10]]]
+
+    [VarAdd, currentSize, [StrLength, line]]
+
+    // Check if memory is big enough
+    // Resize it enough so we dont have to resize everytime
+    [If, currentSize > [MemGetSize, data],
+        [MemResize, data, ([MemGetSize, data] + 10240)]
+    ,]
+
+    // Write data to the memory
+    [VarAdd, byteOffset, [MemWriteString, data, line, byteOffset, 0]]
+
+, input]
+
+
+[RoutineDef, writeInterfacePath,
+    [RoutineCall, initMem]
+
+    [Loop, 100000,
+        [If, [IExists, id],
+            [VarSet, pathName, [IGetTitle, id, 1]]
+
+            [VarSet, index, [StrFind, "\n", #pathName]]
+            [If, (index > 0),
+                [VarSet, pathName, [StrExtract, pathName,, (index - 1)]]
+            ]
+
+            [RoutineCall, addLineToMem, pathName]
+        ]
+    , id]
+
+    // material slider part:
+    [VarSet, currentValue, [IGet, 28516]]
+    [VarSet, lmin, [IGetMin, 28516]]
+    [VarSet, lmax, [IGetMax, 28516]]
+    [Loop, (lmax - lmin),
+        [ISet, 28516, (lmin + counter), 0]
+        [VarSet, pathName, [IGetTitle, 28516, 1]]
+        [RoutineCall, addLineToMem, pathName]
+    , counter]
+
+    [RoutineCall, writeToFile, filepath]
+
+, filepath]
+
+
+[RoutineCall, writeInterfacePath, "interfacePaths.txt"]
+
+/*
+[IButton, "Write Interface Path",,
+    [
+]
+*/

@@ -1,12 +1,21 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+
 import * as zparse from '../zFileParser';
+import { zWindowIDs } from '../zWindowIDs';
+
 
 // https://wietse.loves.engineering/testing-promises-with-mocha-90df8b7d2e35
 
 let numberFile = vscode.Uri.file(vscode.workspace.rootPath + '/parse_number.txt');
 
 suite("ZParse document", function () {
+
+    test("window id", (done) => {
+        var windowPath = zWindowIDs['Tool'];
+        assert.notEqual(windowPath, null);
+        done();
+    });
 
     test("number Test", (done)=>{
         vscode.window.showTextDocument(numberFile).then((textEditor) => {

@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import { readdirSync, statSync } from 'fs';
+
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
 import { ZCommand, ZCommandObject, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
 import * as zparse from '../zFileParser';
 import { ZParser } from '../zParser';
-import * as path from 'path';
-import { readdirSync, statSync } from 'fs';
+import { zWindowIDs } from "../zWindowIDs";
 
 
 interface CmdWithFilename {
@@ -329,6 +331,66 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
     return out;
 }
 
+async function getWindowPathID(zparser: zparse.ZFileParser, parsedString: zparse.ZParsedString, position: vscode.Position): Promise<vscode.CompletionItem[]> {
+    let out: vscode.CompletionItem[] = [];
+
+    let strValue = parsedString.getStringValue();
+    
+    let wasBefore = false;
+    let stringRange = parsedString.getStringValueRange(zparser.document);
+    if (position.isBefore(stringRange.end)){
+        wasBefore = true;
+        let start = parsedString.range.start + 1;
+        let end = zparser.document.offsetAt(position);
+        strValue = strValue.slice(0, end - start);
+    }
+
+    let path = strValue.split(':');
+    let start = stringRange.start;
+
+    let x = 1;
+    let obj = zWindowIDs;
+    for (let p of path){
+        let curPathObj = obj[p];
+        if (curPathObj === undefined && x === path.length){
+            for (let pp in obj){
+                if (pp.startsWith(p)) {
+                    let comp = new vscode.CompletionItem(pp);
+                    
+                    if (obj[pp] === null){
+                        // this is the root path
+                        comp.kind = vscode.CompletionItemKind.File;
+                    } else {
+                        comp.kind = vscode.CompletionItemKind.Folder;
+                        comp.insertText = pp + ':';
+                        comp.command = {
+                            title: 'Folder autocomplete',
+                            command: "editor.action.triggerSuggest"
+                        };
+                    }
+                    
+                    if (wasBefore){
+                        comp.range = new vscode.Range(start, stringRange.end);
+                    }
+
+                    out.push(comp);
+                }
+            }
+
+        } else if (curPathObj === null){
+            return [];
+        }
+        if (curPathObj){
+            obj = curPathObj;
+        }
+        x += 1;
+        start = new vscode.Position(start.line, start.character + 1 + p.length);
+    }
+
+
+    return out;
+}
+
 export class ZCompletionProver implements vscode.CompletionItemProvider {
 
     parser: ZParser;
@@ -376,6 +438,8 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                                     let stringVal = (<zparse.ZParsedString>parsed.parsedObj).getStringValue();
                                     resolve(getRelativePath(stringVal, parser.document.fileName, cmdFile));
                                 }
+                            } else {
+                                resolve(getWindowPathID(parser, <zparse.ZParsedString>parsed.parsedObj, position));
                             }
                         }
                         resolve(null);

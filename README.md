@@ -24,6 +24,10 @@ ZScript language support for VS Code
 
 ![routine_auto](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/routine_auto.gif)
 
+* Provide window path *(new in 1.4)*
+
+![window_path](https://raw.githubusercontent.com/JonasOuellet/vscode-zscript/master/images/window_path.gif)
+
 ### ZCommand Signature
 
 Display information about each command argument (type, description)
@@ -82,6 +86,9 @@ Implement a linter to display some potential error.
 
 
 ## Release Notes
+
+### 1.4.0
+* Add Window path autocomplete
 
 ### 1.3.0
 * Implemented [rename](https://code.visualstudio.com/docs/editor/editingevolved#_rename-symbol)

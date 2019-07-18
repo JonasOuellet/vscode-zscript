@@ -1,3 +1,6 @@
+## 1.4.0 - 17th July, 2019
+* Add autocomplete for window path.
+
 ## 1.3.1 - 4th July, 2019
 * Display RoutineCall argument name even if there is no docstrings
 * Fix an issue where some command definitions were not found

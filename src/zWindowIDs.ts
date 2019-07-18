@@ -1,0 +1,1 @@
+export let zWindowIDs = require('../zsc_lang/zWindowIDs.json');
