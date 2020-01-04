@@ -6,22 +6,48 @@ import { zMathFns, zScriptCmds } from '../zscriptCommands';
 const indexPath = path.normalize(path.join(__dirname, '..', '..', 'zsc_lang', "index.txt"));
 
 
-function _setLineMaxCharLength(line: string, maxChar=90, maxCommaLength=10) {
+function _setLineMaxCharLength(line: string, maxChar=70, newLineSpaces=0) {
     if (line.length <= maxChar) {
         return line;
     }
+    let _spaces = "";
+    for (let x = 0; x < newLineSpaces; x++){
+        _spaces += " ";
+    }
     let finalLine = "";
     let newLine = line;
+
+    let commaFunc = (pos: number) => {
+        finalLine += newLine.slice(0, pos+1);
+        newLine = newLine.slice(pos+1, newLine.length);
+        newLine = newLine.trimLeft();
+        newLine = _spaces + newLine;
+    };
+
+    let spaceFunc = (pos: number) => {
+        finalLine += newLine.slice(0, pos);
+        newLine = _spaces + newLine.slice(pos+1, newLine.length);
+    };
+
     while (maxChar < newLine.length) {
         let commaPos = newLine.lastIndexOf(',', maxChar);
         let spacePose = newLine.lastIndexOf(' ', maxChar);
 
         if (commaPos > spacePose) {
-            finalLine += newLine.slice(0, commaPos+1);
-            newLine = newLine.slice(commaPos, newLine.length);
+            commaFunc(commaPos);
         } else {
-            finalLine += newLine.slice(0, spacePose);
-            newLine = newLine.slice(spacePose+1, newLine.length);
+            // when there is no space in the line ?
+            if (spacePose < 0) {
+                // Find space or comma pose after
+                commaPos = newLine.indexOf(',', maxChar);
+                spacePose = newLine.indexOf(' ', maxChar);
+                
+                if (commaPos < spacePose){
+                    commaFunc(commaPos);
+                    continue;
+                }
+            }
+            spaceFunc(spacePose);
         }
 
         if (newLine.length) {

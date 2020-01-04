@@ -724,6 +724,8 @@ export class ZFileParser {
     public textLength = 0;
     public text = "";
 
+    endChars = new Set([' ', ']', ',', '(', ')', '[', '/', '\n', '\r', '>', '<']);
+
     variables: ZVariable[];
     variablesObj: ZVariableObject;
 
@@ -860,8 +862,9 @@ export class ZFileParser {
                 pos = command.range.end + 1;
                 continue;
             }
-
-            if (c === '<') {
+            // only parse '<' as command when we are in top level because
+            // zscript is supposed to be used top level only
+            if (c === '<' && scope.level === ZScriptLevel.topLevel) {
                 let command = this._parseCommand(pos, scope, '>');
                 command.isZscriptInsert = true;
                 scope.add(command);
@@ -949,14 +952,20 @@ export class ZFileParser {
         return new ZParsedParentheses(scope, inScope, this, new ZRange(pos, endPos));
     }
 
-    _parseText(scope: ZScope, pos: number, endChars=[' ', ']', ',', '(', ')', '[', '/', '\n', '\r', '>']) : ZParsedTextOutput {
+    /**
+     * 
+     * @param scope (ZScope) scope the parser is currently in
+     * @param pos (number) current position in the text
+     * @param endChars (Set) set of characters that end the parsing when encountered
+     */
+    _parseText(scope: ZScope, pos: number, endChars=this.endChars) : ZParsedTextOutput {
         let end = pos + 1;
         let endOfText = true;
         let c = '';
         while (end < this.textLength){
             c = this.text[end];
 
-            if (endChars.indexOf(c) >= 0) {
+            if (endChars.has(c)) {
                 endOfText = false;
                 break;
             }

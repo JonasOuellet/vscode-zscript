@@ -3,7 +3,7 @@ import * as path from 'path';
 import { readdirSync, statSync } from 'fs';
 
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
-import { ZCommand, ZCommandObject, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
+import { ZCommand, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
 import * as zparse from '../zFileParser';
 import { ZParser } from '../zParser';
 import { zWindowIDs } from "../zWindowIDs";
@@ -84,15 +84,19 @@ let cmdToExecAfter = {
 };
 
 
-function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj: ZCommandObject, currentArgsIndex: number, 
-    inserComma:Boolean=false, specificCommand: {} | null = null, returnType:ZArgType = ZArgType.any){
+function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], startChar='[', currentArgsIndex: number, 
+    inserComma:Boolean=false, specificCommand: {} | null = null, returnType:ZArgType = ZArgType.any, position: vscode.Position|null=null){
 
     if (specificCommand === null){
-        specificCommand = zfunObj;
+        specificCommand = zScriptCmds;
     }
 
     for ( var property in specificCommand ) {
-        let currentCommand: ZCommand = zfunObj[property];
+        let currentCommand: ZCommand = zScriptCmds[property];
+        if (currentCommand.syntax[0] !== startChar){
+            continue;
+        }
+
         if (returnType !== ZArgType.any && returnType !== ZArgType.commandGroup){
             if (currentCommand.return !== ZArgType.any && returnType !== currentCommand.return){
                 continue;
@@ -111,7 +115,7 @@ function addZFunctionToCompletionItem(compItem: vscode.CompletionItem[], zfunObj
                 cur.commitCharacters = [','];
             }
         }
-    
+
         cur.detail = "(Command)";
         compItem.push(cur);
     }
@@ -257,7 +261,7 @@ async function addFunctionTypeForVarSet(parser: zparse.ZFileParser, parsed: zpar
             type = <number>zvar.type;
         }
     }
-    addZFunctionToCompletionItem(out, zScriptCmds, 0, insertComma, null, type);
+    addZFunctionToCompletionItem(out, '[', 0, insertComma, null, type);
     return out;
 }
 
@@ -496,9 +500,9 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
                                 inserComma = false;
                             }
                             if (command.isZscriptInsert){
-                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, {'zscriptinsert': 0});
+                                addZFunctionToCompletionItem(out, '<', parsed.index, inserComma, {'zscriptinsert': 0}, ZArgType.any, position);
                             }else{
-                                addZFunctionToCompletionItem(out, zScriptCmds, parsed.index, inserComma, null, returnType);
+                                addZFunctionToCompletionItem(out, '[', parsed.index, inserComma, null, returnType);
                             }
                         }else{
                             if (parsed.index === 2 && (command.commandName === 'VarSet' || command.commandName === 'VarDef')){
