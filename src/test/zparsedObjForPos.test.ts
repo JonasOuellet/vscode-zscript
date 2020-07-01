@@ -29,8 +29,7 @@ suite("ZParse Range and get ZParsed for position", function () {
     test("ZRange is not Containing pos", ()=>{
         let range = new zparse.ZRange(25, 50);
         
-        assert.equal(range.isContainingPosition(10), false);
-        assert.equal(range.isContainingPosition(25), false);
+        assert.equal(range.isContainingPosition(24), false);
     });
 
     test("ZRange is not Containing pos exclusive", ()=>{

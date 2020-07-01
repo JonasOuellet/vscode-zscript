@@ -47,6 +47,16 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Parse Cmds Index",
+            "program": "${workspaceFolder}/out/dev/genCmdList.js",
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm: compile"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch via NPM",
             "runtimeExecutable": "npm",
             "runtimeArgs": [

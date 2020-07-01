@@ -6,7 +6,7 @@ import { zMathFns, zScriptCmds } from '../zscriptCommands';
 const indexPath = path.normalize(path.join(__dirname, '..', '..', 'zsc_lang', "index.txt"));
 
 
-function _setLineMaxCharLength(line: string, maxChar=70, newLineSpaces=0) {
+function _setLineMaxCharLength(line: string, maxChar=90, newLineSpaces=0) {
     if (line.length <= maxChar) {
         return line;
     }

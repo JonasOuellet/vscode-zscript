@@ -3322,6 +3322,143 @@ optOut7, optOut8]
 [ZSphereSet, propertyIndex, zSphereIndex, value]
 
 /**
+* Delete specified key frame index of the active track. Output: Returns the number of
+* available key frames. (Sub Level only)
+* @param KeyFrameIndex: (number) - Key Frame Index
+* 
+* Example:
+* 
+* [TLDeleteKeyFrame,1]
+* 
+* Delete the 2nd key frame.
+* 
+*/
+[TLDeleteKeyFrame, KeyFrameIndex]
+
+/**
+* Returns the index of the active track<br>
+* Output: Returns the current active track index -1=None (Sub Level only).
+* return (number)
+* 
+* Example:
+* 
+* [TLGetActiveTrackIndex]
+* 
+* Returns the current active track index.
+*/
+[TLGetActiveTrackIndex]
+
+/**
+* Returns the total number of key frames in the active track. Output: Returns the number of
+* key frames in the active track 0=None (Sub Level only).
+* return (number)
+* 
+* Example:
+* 
+* [TLGetKeyFramesCount]
+* 
+* Returns the current number of key frames.
+*/
+[TLGetKeyFramesCount]
+
+/**
+* Get the time of the specified key frame index of the active track Output: Returns the time
+* of the selected key frame or -1 if error. (Sub Level only)
+* @param KeyFrameIndex: (number) - Key Frame Index
+* return (number)
+* 
+* Example:
+* 
+* [TLDeleteKeyFrame,1]
+* 
+* Get the time of the 2nd key frame.
+* 
+*/
+[TLGetKeyFrameTime, KeyFrameIndex]
+
+/**
+* Returns the current TimeLine knob position in  0.0 to 1.0 range Output: Returns the
+* current TimeLine knob time 0=start, 1=end (Sub Level only).
+* return (number)
+* 
+* Example:
+* 
+* [TLGetTime]
+* 
+* Returns the current TimeLine knob time.
+*/
+[TLGetTime]
+
+/**
+* Move TimeLine knob position to specified key frame index of the active track. Output:
+* Returns the time of the selected key frame or -1 if error. (Sub Level only)
+* @param KeyFrameIndex: (number) - Key Frame Index
+* 
+* Example:
+* 
+* [TLGotoKeyFrameTime,1]
+* 
+* Move TimeLine knob position to 2nd key frame.
+* 
+*/
+[TLGotoKeyFrameTime, KeyFrameIndex]
+
+/**
+* Sets the current TimeLine knob position in  0.0 to 1.0 range. Output: Returns zero if OK,
+* -1 if error. (Sub Level only)
+* @param Time: (number) - Time 0.0 to 1.0 range
+* 
+* Example:
+* 
+* [TLGotoTime,0.5]
+* 
+* Move TimeLine knob mid position.
+* 
+*/
+[TLGotoTime, Time]
+
+/**
+* Create a new key frame in the active track Output: Returns the new key frame index or -1
+* if error. (Sub Level only)
+* @param Time: (number) - Optional time (if omited then use current time)
+* 
+* Example:
+* 
+* [TLNewKeyFrame,0.5]
+* 
+* Create a new key frame at mid position.
+* 
+*/
+[TLNewKeyFrame, Time]
+
+/**
+* Sets the active track index. Output: Returns zero if OK, -1 if error. (Sub Level only)
+* @param TrackIndex: (number) - Track Index 0=main track
+* 
+* Example:
+* 
+* [TLSetActiveTrackIndex,0]
+* 
+* Activates the main Camera track.
+* 
+*/
+[TLSetActiveTrackIndex, TrackIndex]
+
+/**
+* Set the time of the specified key frame index of the active track<br>
+* Output: Returns the new key frame index or -1 if error.(Sub Level only)
+* @param KeyFrameIndex: (number) - Key Frame Index
+* @param Time: (number) - Time 0.0 to 1.0 range
+* 
+* Example:
+* 
+* [TLSetKeyFrameTime, 1,0.5]
+* 
+* Set the time of the second key frame to 0.5 (the mid position).
+*/
+[TLSetKeyFrameTime, KeyFrameIndex, Time]
+
+/**
 * Integer Portion of value; removes everything after decimal point
 * @param value: (number) - 
 * return (number)

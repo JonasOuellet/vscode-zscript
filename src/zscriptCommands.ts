@@ -2321,7 +2321,121 @@ export let zScriptCmds: ZCommandObject = { IButton:
           description: 'ZSphere index (0 based)' },
         { name: 'value', description: 'New property value', type: ZArgType.number } ],
      level: ZScriptLevel.subLevel,
-     return: ZArgType.number } };
+     return: ZArgType.number },
+    TLDeleteKeyFrame:
+     { syntax: '[%s, %s]',
+       description:
+        'Delete specified key frame index of the active track. Output: Returns the number of available key frames. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLDeleteKeyFrame,1]</code>\n\nDelete the 2nd key frame.\n',
+       args:
+        [ { name: 'KeyFrameIndex',
+            description: 'Key Frame Index',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null },
+    TLGetActiveTrackIndex:
+     { syntax: '[%s]',
+       description:
+        'Returns the index of the active track<br>\nOutput: Returns the current active track index -1=None (<b>Sub Level</b> only).',
+       example:
+        'Example:\n\n<code>[TLGetActiveTrackIndex]</code>\n\nReturns the current active track index.',
+       args: [],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.number },
+    TLGetKeyFramesCount:
+     { syntax: '[%s]',
+       description:
+        'Returns the total number of key frames in the active track. Output: Returns the number of key frames in the active track 0=None (<b>Sub Level</b> only).',
+       example:
+        'Example:\n\n<code>[TLGetKeyFramesCount]</code>\n\nReturns the current number of key frames.',
+       args: [],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.number },
+    TLGetKeyFrameTime:
+     { syntax: '[%s, %s]',
+       description:
+        'Get the time of the specified key frame index of the active track Output: Returns the time of the selected key frame or -1 if error. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLDeleteKeyFrame,1]</code>\n\nGet the time of the 2nd key frame.\n',
+       args:
+        [ { name: 'KeyFrameIndex',
+            description: 'Key Frame Index',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.number },
+    TLGetTime:
+     { syntax: '[%s]',
+       description:
+        'Returns the current TimeLine knob position in  0.0 to 1.0 range Output: Returns the current TimeLine knob time 0=start, 1=end (<b>Sub Level</b> only).',
+       example:
+        'Example:\n\n<code>[TLGetTime]</code>\n\nReturns the current TimeLine knob time.',
+       args: [],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.number },
+    TLGotoKeyFrameTime:
+     { syntax: '[%s, %s]',
+       description:
+        'Move TimeLine knob position to specified key frame index of the active track. Output: Returns the time of the selected key frame or -1 if error. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLGotoKeyFrameTime,1]</code>\n\nMove TimeLine knob position to 2nd key frame.\n',
+       args:
+        [ { name: 'KeyFrameIndex',
+            description: 'Key Frame Index',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null },
+    TLGotoTime:
+     { syntax: '[%s, %s]',
+       description:
+        'Sets the current TimeLine knob position in  0.0 to 1.0 range. Output: Returns zero if OK, -1 if error. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLGotoTime,0.5]</code>\n\nMove TimeLine knob mid position.\n',
+       args:
+        [ { name: 'Time',
+            description: 'Time 0.0 to 1.0 range',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null },
+    TLNewKeyFrame:
+     { syntax: '[%s, %s]',
+       description:
+        'Create a new key frame in the active track Output: Returns the new key frame index or -1 if error. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLNewKeyFrame,0.5]</code>\n\nCreate a new key frame at mid position.\n',
+       args:
+        [ { name: 'Time',
+            description: 'Optional time (if omited then use current time)',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null },
+    TLSetActiveTrackIndex:
+     { syntax: '[%s, %s]',
+       description:
+        'Sets the active track index. Output: Returns zero if OK, -1 if error. (<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLSetActiveTrackIndex,0]</code>\n\nActivates the main Camera track.\n',
+       args:
+        [ { name: 'TrackIndex',
+            description: 'Track Index 0=main track',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null },
+    TLSetKeyFrameTime:
+     { syntax: '[%s, %s]',
+       description:
+        'Set the time of the specified key frame index of the active track<br>\nOutput: Returns the new key frame index or -1 if error.(<b>Sub Level</b> only)',
+       example:
+        'Example:\n\n<code>[TLSetKeyFrameTime, 1,0.5]</code>\n\nSet the time of the second key frame to 0.5 (the mid position).',
+       args:
+        [ { name: 'KeyFrameIndex',
+            description: 'Key Frame Index',
+            type: ZArgType.number },
+          { name: 'Time',
+            description: 'Time 0.0 to 1.0 range',
+            type: ZArgType.number } ],
+       level: ZScriptLevel.subLevel,
+       return: ZArgType.null } };
 
 
 export let zMathFns: ZCommandObject = { 
