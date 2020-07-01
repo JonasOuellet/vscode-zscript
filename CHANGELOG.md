@@ -1,3 +1,6 @@
+## 1.5.2 - June 30th
+* Add Timeline command.
+
 ## 1.5.1 - January 3rd 
 * Parser bug fix with character '<'
 
