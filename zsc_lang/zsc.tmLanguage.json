@@ -76,10 +76,6 @@
 				"match": "\\b(FileExecute|FileExists|FileGetInfo|FileNameAdvance|FileNameAsk|FileNameExtract|FileNameGetLastTyped|FileNameGetLastUsed|FileNameMake|FileNameResolvePath|FileNameSetNext|ShellExecute)\\b"
 			},
 			{
-				"name": "support.type",
-				"match": "test"
-			},
-			{
 				"name": "variable.other.zsc",
 				"match": "(#\\w+)"
 			}
