@@ -1,8 +1,11 @@
+## 1.6.0 - July 21th
+* Provide additional syntax highlight [#9](https://github.com/JonasOuellet/vscode-zscript/issues/9)
+
 ## 1.5.2 - June 30th
 * Add Timeline command.
 
 ## 1.5.1 - January 3rd 
-* Parser bug fix with character '<'
+* Parser bug fix with character '<' [#10](https://github.com/JonasOuellet/vscode-zscript/issues/10)
 
 ## 1.4.0 - July 17th, 2019
 * Add autocomplete for window path.
