@@ -12,9 +12,6 @@
 			"include": "#zscriptCommand"
 		},
 		{
-			"include": "#zscriptOperator"
-		},
-		{
 			"include": "#strings"
 		},
 		{
@@ -52,23 +49,42 @@
 		"zscriptCommand": {
 			"patterns": [{
 				"name": "keyword.other.zsc",
-				"match": "\\b(zscriptinsert|Assert|IFadeIn|MemGetSize|StrFromAsc|BackColorSet|IFadeOut|MemMove|StrLength|ButtonFind|IFreeze|MemMultiWrite|StrLower|ButtonPress|IGet|MemRead|StrMerge|ButtonSet|IGetFlags|MemReadString|StrokeGetInfo|ButtonUnPress|IGetHotkey|MemResize|StrokeGetLast|CanvasClick|IGetID|MemSaveToFile|StrokeLoad|CanvasGyroHide|IGetInfo|MemWrite|StrokesLoad|CanvasGyroShow|IGetMax|MemWriteString|StrToAsc|CanvasPanGetH|IGetMin|Mesh3DGet|StrUpper|CanvasPanGetV|IGetSecondary|MessageOK|SubTitle|CanvasPanSet|IGetStatus|MessageOKCancel|SubToolGetActiveIndex|CanvasStroke|IGetTitle|MessageYesNo|SubToolGetCount|CanvasStrokes|IHeight|MessageYesNoCancel|SubToolGetID|CanvasZoomGet|IHide|MouseHPos|SubToolLocate|CanvasZoomSet|IHPos|MouseLButton|SubToolSelect|Caption|IKeyPress|MouseVPos|TextCalcWidth|CurveAddPoint|ILock|MTransformGet|Title|CurvesCreateMesh|Image|MTransformSet|ToolGetActiveIndex|CurvesDelete|IMaximize|MVarDef|ToolGetCount|CurvesNewCurve|IMinimize|MVarGet|ToolGetPath|CurvesNew|IModGet|MVarSet|ToolGetSubToolID|CurvesToUI|IModSet|NormalMapCreate|ToolGetSubToolsCount|Delay|Interpolate|Note|ToolLocateSubTool|DispMapCreate|IPress|NoteBar|ToolSelect|Exit|IReset|NoteIButton|ToolSetPath|FileDelete|IsDisabled|NoteIGet|TransformGet|FileExecute|IsEnabled|NoteISwitch|TransformSet|FileExists|ISet|PageSetWidth|TransposeGet|FileGetInfo|ISetHotkey|PaintBackground|TransposeIsShown|FileNameAdvance|ISetMax|PaintBackSliver|TransposeSet|FileNameAsk|ISetMin|PaintPageBreak|Val|FileNameExtract|ISetStatus|PaintRect|VarAdd|FileNameGetLastTyped|IShowActions|PaintTextRect|VarDec|FileNameGetLastUsed|IShow|PD|VarDef|FileNameMake|ISlider|PenMoveCenter|VarDiv|FileNameResolvePath|IsLocked|PenMoveDown|VarInc|FileNameSetNext|IStroke|PenMoveLeft|VarListCopy|FontSetColor|ISubPalette|PenMoveRight|VarLoad|FontSetOpacity|IsUnlocked|PenMove|VarMul|FontSetSize|ISwitch|PenSetColor|VarSave|FontSetSizeLarge|IToggle|PixolPick|VarSet|FontSetSizeMedium|IUnlock|PropertySet|VarSize|FontSetSizeSmall|IUnPress|Randomize|VarSub|FrontColorSet|IUpdate|RGB|Var|GetActiveToolPath|IVPos|RoutineCall|ZBrushInfo|HotKeyText|IWidth|RoutineDef|ZBrushPriorityGet|IButton|Logical Operators|SectionBegin|ZBrushPrioritySet|IClick|Loop|SectionEnd|IClose|LoopContinue|ShellExecute|ZSphereAdd|IColorSet|LoopExit|Sleep|ZSphereDel|IConfig|SleepAgain|ZSphereEdit|IDialog|SoundPlay|ZSphereGet|IDisable|MemCopy|SoundStop|ZSphereSet|IEnable|MemCreate|StrAsk|IExists|MemCreateFromFile|StrExtract|If|MemDelete|StrFind|TLSetKeyFrameTime|TLSetActiveTrackIndex|TLNewKeyFrame|TLGotoTime|TLGotoKeyFrameTime|TLGetTime|TLGetKeyFrameTime|TLGetKeyFramesCount|TLGetActiveTrackIndex|TLDeleteKeyFrame)\\b"
-
-			}]
-		},
-		"zscriptOperator": {
-			"patterns": [{
-				"name": "keyword.other.zsc",
-				"match": "\\b(INT|FRAC|ABS|NEG|MIN|MAX|SQRT|RAND|IRAND|SIN|COS|TAN|ASIN|ACOS|ATAN|ATAN2|LOG|LOG10|BOOL)\\b"
-			}]
-		},
-		"variable": {
-			"patterns": [{
-				"name": "variable.other",
+				"match": "\\b(IFadeIn|BackColorSet|IFadeOut|ButtonFind|ButtonPress|IGet|ButtonSet|IGetFlags|StrokeGetInfo|ButtonUnPress|IGetHotkey|StrokeGetLast|CanvasClick|IGetID|StrokeLoad|CanvasGyroHide|IGetInfo|StrokesLoad|CanvasGyroShow|IGetMax|CanvasPanGetH|IGetMin|Mesh3DGet|CanvasPanGetV|IGetSecondary|MessageOK|SubTitle|CanvasPanSet|IGetStatus|MessageOKCancel|SubToolGetActiveIndex|CanvasStroke|IGetTitle|MessageYesNo|SubToolGetCount|CanvasStrokes|IHeight|MessageYesNoCancel|SubToolGetID|CanvasZoomGet|IHide|MouseHPos|SubToolLocate|CanvasZoomSet|IHPos|MouseLButton|SubToolSelect|Caption|IKeyPress|MouseVPos|TextCalcWidth|CurveAddPoint|ILock|Title|CurvesCreateMesh|Image|ToolGetActiveIndex|CurvesDelete|IMaximize|ToolGetCount|CurvesNewCurve|IMinimize|ToolGetPath|CurvesNew|IModGet|ToolGetSubToolID|CurvesToUI|IModSet|NormalMapCreate|ToolGetSubToolsCount|Note|ToolLocateSubTool|DispMapCreate|IPress|NoteBar|ToolSelect|IReset|NoteIButton|ToolSetPath|FileDelete|IsDisabled|NoteIGet|TransformGet|IsEnabled|NoteISwitch|TransformSet|ISet|PageSetWidth|TransposeGet|ISetHotkey|PaintBackground|TransposeIsShown|ISetMax|PaintBackSliver|TransposeSet|ISetMin|PaintPageBreak|Val|ISetStatus|PaintRect|VarAdd|IShowActions|PaintTextRect|VarDec|IShow|PD|VarDef|ISlider|PenMoveCenter|VarDiv|IsLocked|PenMoveDown|VarInc|IStroke|PenMoveLeft|VarListCopy|FontSetColor|ISubPalette|PenMoveRight|VarLoad|FontSetOpacity|IsUnlocked|PenMove|VarMul|FontSetSize|ISwitch|PenSetColor|VarSave|FontSetSizeLarge|IToggle|PixolPick|VarSet|FontSetSizeMedium|IUnlock|PropertySet|VarSize|FontSetSizeSmall|IUnPress|Randomize|VarSub|FrontColorSet|IUpdate|RGB|Var|GetActiveToolPath|IVPos|ZBrushInfo|HotKeyText|IWidth|ZBrushPriorityGet|IButton|Logical Operators|SectionBegin|ZBrushPrioritySet|IClick|SectionEnd|IClose|ZSphereAdd|IColorSet|ZSphereDel|IConfig|ZSphereEdit|IDialog|ZSphereGet|IDisable|ZSphereSet|IEnable|IExists|TLSetKeyFrameTime|TLSetActiveTrackIndex|TLNewKeyFrame|TLGotoTime|TLGotoKeyFrameTime|TLGetTime|TLGetKeyFrameTime|TLGetKeyFramesCount|TLGetActiveTrackIndex|TLDeleteKeyFrame)\\b"
+			},
+			{
+				"name": "support.function.zsc",
+				"match": "\\b(INT|FRAC|ABS|NEG|MIN|MAX|SQRT|RAND|IRAND|SIN|COS|TAN|ASIN|ACOS|ATAN|ATAN2|LOG|LOG10|BOOL|Interpolate)\\b"
+			},
+			{
+				"name": "keyword.control.zsc",
+				"match": "\\b(Assert|Delay|Exit|If|IFreeze|Loop|LoopContinue|LoopExit|RoutineCall|RoutineDef|Sleep|SleepAgain)\\b"
+			},
+			{
+				"name": "invalid.illegal",
+				"match": "\\b(zscriptinsert)\\b"
+			},
+			{
+				"name": "entity.name.namespace.zsc",
+				"match": "\\b(MemCopy|MemGetSize|MemCreate|MemCreateFromFile|MemDelete|MemMove|MemMultiWrite|MemRead|MemReadString|MemResize|MemSaveToFile|MemWrite|MemWriteString|MTransformGet|MTransformSet|MVarDef|MVarGet|MVarSet|SoundPlay|SoundStop)\\b"
+			},
+			{
+				"name": "string.regexp.zsc",
+				"match": "\\b(StrAsk|StrExtract|StrFind|StrFromAsc|StrLength|StrLower|StrMerge|StrToAsc|StrUpper)\\b"
+			},
+			{
+				"name": "constant.character.escape.zsc",
+				"match": "\\b(FileExecute|FileExists|FileGetInfo|FileNameAdvance|FileNameAsk|FileNameExtract|FileNameGetLastTyped|FileNameGetLastUsed|FileNameMake|FileNameResolvePath|FileNameSetNext|ShellExecute)\\b"
+			},
+			{
+				"name": "support.type",
+				"match": "test"
+			},
+			{
+				"name": "variable.other.zsc",
 				"match": "(#\\w+)"
-			}]
+			}
+		]
 		}
-		
 	},
 	"scopeName": "source.zsc"
 }
