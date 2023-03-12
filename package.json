@@ -105,7 +105,7 @@
     "tslint": "^5.8.0",
     "@types/node": "^10.12.18",
     "@types/mocha": "^5.2.5",
-    "jsdom": "^13.1.0",
+    "jsdom": "^16.5.0",
     "@types/jsdom": "^12.2.1",
     "@types/opn": "^5.1.0"
   },
