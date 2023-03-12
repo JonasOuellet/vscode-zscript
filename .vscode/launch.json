@@ -11,7 +11,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "D:/documents/zScriptDoc",
+                "${workspaceFolder}/extensionTest",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [

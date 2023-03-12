@@ -2,7 +2,7 @@
   "name": "zscript",
   "displayName": "ZScript",
   "description": "ZBrush scripting language support for visual studio code",
-  "version": "1.5.3",
+  "version": "1.7.0",
   "publisher": "ouelletjonathan",
   "engines": {
     "vscode": "^1.30.0"
@@ -29,9 +29,7 @@
   "activationEvents": [
     "onLanguage:zscript",
     "onCommand:zscript.openZScriptDoc",
-    "onCommand:zscript.openZScriptCommandRef",
-    "onCommand:zscript.installFileIcon",
-    "onCommand:zscript.uninstallFileIcon"
+    "onCommand:zscript.openZScriptCommandRef"
   ],
   "categories": [
     "Programming Languages",
@@ -74,14 +72,6 @@
       {
         "command": "zscript.openZScriptCommandRef",
         "title": "ZScript: Web Command Reference"
-      },
-      {
-        "command": "zscript.installFileIcon",
-        "title": "ZScript: Install File Icon"
-      },
-      {
-        "command": "zscript.uninstallFileIcon",
-        "title": "ZScript: Uninstall File Icon"
       }
     ],
     "configuration": [

@@ -2,10 +2,12 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as zparse from '../zFileParser';
 import * as zutils from '../zCommandUtil';
+import * as testHelper from "./testHelper";
+
 
 // https://wietse.loves.engineering/testing-promises-with-mocha-90df8b7d2e35
 
-let varDefFile = vscode.Uri.file(vscode.workspace.rootPath + '/parse_MVarDef.txt');
+let varDefFile = testHelper.getTestFile('parse_MVarDef.txt');
 
 suite("Memory Variable Definition Test", function () {
 
@@ -15,10 +17,10 @@ suite("Memory Variable Definition Test", function () {
             parser.parseDocument();
             parser.updateVariable();
 
-            assert.equal(parser.variables[0].name, 'mVarTest');
-            assert.equal(parser.variables[1].name, 'mVarTest2');
-            assert.equal(parser.variables[2].name, 'mVarTest3');
-            assert.equal(parser.variables[3].name, 'mVarTest4');
+            assert.strictEqual(parser.variables[0].name, 'mVarTest');
+            assert.strictEqual(parser.variables[1].name, 'mVarTest2');
+            assert.strictEqual(parser.variables[2].name, 'mVarTest3');
+            assert.strictEqual(parser.variables[3].name, 'mVarTest4');
 
         }, (reason) => {
             console.log(reason);
@@ -31,10 +33,10 @@ suite("Memory Variable Definition Test", function () {
             parser.parseDocument();
             parser.updateVariable();
 
-            assert.equal(parser.variables[0].type, zutils.ZArgType.varMemoryBlock);
-            assert.equal(parser.variables[1].type, zutils.ZArgType.varMemoryBlock);
-            assert.equal(parser.variables[2].type, zutils.ZArgType.varMemoryBlock);
-            assert.equal(parser.variables[3].type, zutils.ZArgType.varMemoryBlock);
+            assert.strictEqual(parser.variables[0].type, zutils.ZArgType.varMemoryBlock);
+            assert.strictEqual(parser.variables[1].type, zutils.ZArgType.varMemoryBlock);
+            assert.strictEqual(parser.variables[2].type, zutils.ZArgType.varMemoryBlock);
+            assert.strictEqual(parser.variables[3].type, zutils.ZArgType.varMemoryBlock);
 
         }, (reason) => {
             console.log(reason);
@@ -47,10 +49,10 @@ suite("Memory Variable Definition Test", function () {
             parser.parseDocument();
             parser.updateVariable();
 
-            assert.equal(parser.variables[0].size, 25);
-            assert.equal(parser.variables[1].size, 50);
-            assert.equal(parser.variables[2].size, 1);
-            assert.equal(parser.variables[3].size, 1);
+            assert.strictEqual(parser.variables[0].size, 25);
+            assert.strictEqual(parser.variables[1].size, 50);
+            assert.strictEqual(parser.variables[2].size, 1);
+            assert.strictEqual(parser.variables[3].size, 1);
 
         }, (reason) => {
             console.log(reason);

@@ -10,10 +10,13 @@ async function getVariableByName(parse: ZFileParser, name: string, scope: ZScope
     if (zvar){
         let declartionstring = new vscode.MarkdownString();
         declartionstring.appendCodeblock(zvar.getDeclarationText(), "zscript");
+        
+        let documentation = new vscode.MarkdownString();
+        documentation.appendText(zvar.getDocumentationText());
 
         return {
             contents: [declartionstring,
-                       zvar.getDocumentationText(),
+                       documentation,
                        "type: " + ZArgType[zvar.type]]
         };
     }
@@ -27,6 +30,28 @@ export class ZHoverProvider implements vscode.HoverProvider {
 
     constructor (parser: ZParser){
         this.parser = parser;
+    }
+
+    private async provide(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        word: string
+    ): Promise<vscode.Hover | null> {
+        let parse = await this.parser.getZFileParser(document);
+        let parsed = parse.getZParsedForPosition(position);
+        if (!parsed) {
+            return null;
+        }
+        if (parsed.parsedObj.type === ZParsedType.lText){
+            let scope = parsed.parsedObj.scope;
+            let command = parse.getArgsByName(word, scope);
+            if (command){
+                let arg = command.args[word];
+                return { contents: ["(arg) " + word + ": " + ZArgType[arg.type]] };
+            }
+            return await getVariableByName(parse, word, scope);
+        }
+        return null;
     }
 
     public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): 
@@ -80,27 +105,6 @@ export class ZHoverProvider implements vscode.HoverProvider {
             word = word.slice(1);
         }
 
-        return new Promise((resolve, reject)=>{
-            this.parser.getZFileParser(document).then(parse => {
-                let parsed = parse.getZParsedForPosition(position);
-                if (parsed){
-                    if (parsed.parsedObj.type === ZParsedType.lText){
-                        let scope = parsed.parsedObj.scope;
-                        let command = parse.getArgsByName(word, scope);
-                        if (command){
-                            let arg = command.args[word];
-                            resolve({
-                                contents: ["(arg) " + word + ": " + ZArgType[arg.type]]
-                            });
-                        }
-                        resolve(getVariableByName(parse, word, scope));
-                    }
-                }
-                resolve(null);
-            }).catch(reason => {
-                console.log(reason);
-                reject(reason);
-            });
-        });
+        return this.provide(document, position, word);
     }
 }

@@ -35,24 +35,21 @@ export class ZColorProvider implements vscode.DocumentColorProvider {
 
     provideDocumentColors(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.ColorInformation[]>{
         
-        return new Promise((resolve, reject) => {
-            this.parser.getZFileParser(document).then((parsedFile) => {
-                let out: vscode.ProviderResult<vscode.ColorInformation[]> = [];
-                let number = <zparse.ZParsedNumber[]>parsedFile.getAllZParsedTypes(zparse.ZParsedType.lNumber);
-                for (let n of number){
-                    if (n.isHexaDecimal){
-                        let value = n.getText();
-                        let color = hexToRgb(value);
-                        let colorInfo = new vscode.ColorInformation(n.range.convertToVsCodeRange(document), color);
-                        out.push(colorInfo);
-                    }
+        return this.parser.getZFileParser(document).then((parsedFile) => {
+            let out: vscode.ProviderResult<vscode.ColorInformation[]> = [];
+            let number = <zparse.ZParsedNumber[]>parsedFile.getAllZParsedTypes(zparse.ZParsedType.lNumber);
+            for (let n of number){
+                if (n.isHexaDecimal){
+                    let value = n.getText();
+                    let color = hexToRgb(value);
+                    let colorInfo = new vscode.ColorInformation(n.range.convertToVsCodeRange(document), color);
+                    out.push(colorInfo);
                 }
-                resolve(out);
-            }).catch(err => {
-
-            });
+            }
+            return out;
+        }).catch(err => {
+            return null;
         });
-
     }
 
 

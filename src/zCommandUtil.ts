@@ -4,7 +4,7 @@ import { writeFile } from "fs";
 //import { MarkdownString } from "vscode";
 
 
-export const CommandFilePath = path.normalize(path.join(__dirname, '..', 'src', "zscriptCommands.ts"));
+export const CommandFilePath = path.normalize(path.join(__dirname, '..', 'src', "zscriptCommandsV2.ts"));
 
 export enum ZScriptLevel {
     all,

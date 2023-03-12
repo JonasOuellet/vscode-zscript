@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { readdirSync, statSync } from 'fs';
+import { readdirSync, statSync, existsSync } from 'fs';
 
 import { zScriptCmds, zMathFns } from "../zscriptCommands";
 import { ZCommand, ZArgType, ZType, zConvertHTMLtoMarkdown } from "../zCommandUtil";
@@ -272,7 +272,7 @@ async function addVariableTypeForVarSet(parser: zparse.ZFileParser, parsed: zpar
     
         let varName = command.getVariableName();
     
-        let arg = await parser.getArgsByName(varName, parsed.parsedObj.scope);
+        let arg = parser.getArgsByName(varName, parsed.parsedObj.scope);
         if (arg){
             type = <number>arg.args[varName].type;
     
@@ -290,22 +290,41 @@ async function addVariableTypeForVarSet(parser: zparse.ZFileParser, parsed: zpar
             }
         }
 
-        return addVariableByType(out, parser, parsed, type);
+        addVariableByType(out, parser, parsed, type);
+
+        if (type === ZArgType.any || type === ZArgType.number){
+            addMathFn(out);
+        }
+        return out;
 }
 
-async function getRelativePath(startPath: string, curFilePath: string, cmdFile: CmdWithFilename): Promise<vscode.CompletionItem[]> {
+function getRelativePath(startPath: string, curFilePath: string, cmdFile: CmdWithFilename): vscode.CompletionItem[] {
     let out: vscode.CompletionItem[] = [];
 
-    let dirName = path.dirname(curFilePath);
-    
-    dirName = path.resolve(dirName, startPath);
+    console.log("test");
 
-    let backDir = new vscode.CompletionItem(".." + path.sep, vscode.CompletionItemKind.Folder);
-    out.push(backDir);
+    let folderpart = "";
+    let fileparth = "";
+    if (startPath.endsWith('\\') || startPath.endsWith('/')) {
+        folderpart = startPath;
+    } else {
+        let splitted = startPath.replace('\\', '/').split('/');
+        folderpart = splitted.slice(0, -1).join(path.sep);
+        fileparth = splitted[splitted.length - 1]
+    }
 
-    let paths = readdirSync(dirName);
+    let currentDir = path.resolve(path.dirname(curFilePath), folderpart);
+    if (!existsSync(currentDir)) {
+        return [];
+    }
+
+    let paths = readdirSync(currentDir);
     for (let filename of paths) {
-        var fpath = path.join(dirName, filename);
+        if (!filename.startsWith(fileparth)){
+            continue;
+        }
+
+        var fpath = path.join(currentDir, filename);
 
         let stat = statSync(fpath);
         if (stat.isDirectory()){
@@ -335,7 +354,7 @@ async function getRelativePath(startPath: string, curFilePath: string, cmdFile: 
     return out;
 }
 
-async function getWindowPathID(zparser: zparse.ZFileParser, parsedString: zparse.ZParsedString, position: vscode.Position): Promise<vscode.CompletionItem[]> {
+function getWindowPathID(zparser: zparse.ZFileParser, parsedString: zparse.ZParsedString, position: vscode.Position): vscode.CompletionItem[] {
     let out: vscode.CompletionItem[] = [];
 
     let strValue = parsedString.getStringValue();
@@ -403,6 +422,131 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
         this.parser = parser;
     }
 
+    private provideString(
+        parsed: zparse.ZParsedPosition,
+        parser: zparse.ZFileParser,
+        position: vscode.Position
+    ): vscode.CompletionItem[] | vscode.CompletionList {
+        let parentParsed = parsed.parsedObj.scope.parent;
+        if (parentParsed && parentParsed.owner){
+            // this is a command inside scope.
+            let parentCmd = parentParsed.owner; 
+            let cmdFile = cmdArgFilename[parentCmd.commandName];
+            if (cmdFile){
+                let index = parentCmd.insideScope.scopes.indexOf(parsed.parsedObj.scope);
+                if (index === cmdFile.id){
+                    let stringVal = (<zparse.ZParsedString>parsed.parsedObj).getStringValue();
+                    return getRelativePath(stringVal, parser.document.fileName, cmdFile);
+                }
+            } else {
+                return getWindowPathID(parser, <zparse.ZParsedString>parsed.parsedObj, position);
+            }
+        }
+        return [];
+    }
+
+    private async provideCommand(
+        parsed: zparse.ZParsedPosition,
+        parser: zparse.ZFileParser,
+        position: vscode.Position,
+        insertComma: Boolean
+    ): Promise<vscode.CompletionItem[]> {
+        let command = parsed.parsedObj as zparse.ZParsedCommand;
+                        
+        let parentParsed = parsed.parsedObj.scope.parent;
+        let returnType = ZArgType.any;
+        if (parentParsed && parentParsed.owner){
+            // this is a command inside scope.
+            let commandName = parentParsed.owner.commandName;
+            let comObj = zScriptCmds[commandName];
+            if (comObj){
+                let index = parentParsed.owner.insideScope.scopes.indexOf(parsed.parsedObj.scope);
+                if (commandName === 'VarSet' || commandName === 'VarDef'){
+                    // htag var or var command,
+                    if (command.commandName === 'Var'){
+                        return await addVariableTypeForVarSet(parser, parsed, parentParsed.owner);
+                    }else{
+                        if (index === 2 && parsed.index === 0){
+                            return await addFunctionTypeForVarSet(parser, parsed, parentParsed.owner, insertComma);
+                        }
+                    }
+                }else{
+                    index -= 1;
+                    if ( index > 0 && index < comObj.args.length){
+                        returnType = comObj.args[index].type;
+                    }
+                }
+            } 
+        }
+
+        if (parsed.index >= 3 && command.commandName === "RoutineDef") {
+            let out: vscode.CompletionItem[] = [];
+            addSnippetType(out);
+            return out;
+        }
+
+        if (parsed.index >= 2 && command.commandName === "RoutineCall"){
+            let routineName = command.getVariableName();
+            return await addVariableForRoutineCall(parser, routineName, parsed);
+        }
+
+        // first argument of the command
+        // usually the command name list all command
+        let out: vscode.CompletionItem[] = [];
+        if (parsed.index <= 0){
+            if (command.insideScope.scopes.length > 1){
+                insertComma = false;
+            }
+            if (command.isZscriptInsert){
+                addZFunctionToCompletionItem(out, '<', parsed.index, insertComma, {'zscriptinsert': 0}, ZArgType.any, position);
+            }else{
+                addZFunctionToCompletionItem(out, '[', parsed.index, insertComma, null, returnType);
+            }
+        }else{
+            if (parsed.index === 2 && (command.commandName === 'VarSet' || command.commandName === 'VarDef')){
+                return await addVariableTypeForVarSet(parser, parsed, command);
+            }
+
+            let argType = command.getCommandArgsType(parsed.index);
+            if (argType === undefined){
+                argType = ZArgType.any;
+            }
+            if (argType === ZArgType.any || argType === ZArgType.number){
+                addMathFn(out);
+            }
+
+            addVariableByType(out, parser, parsed, argType);
+        }
+        return out;
+    }
+
+    private async provide(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        insertComma: Boolean
+    ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
+        let parser = await this.parser.getZFileParser(document);
+        let out: vscode.CompletionItem[] = [];
+        let parsed = parser.getZParsedForPosition(position);
+        if (!parsed) {
+            return out;
+        }
+
+        if (parsed.parsedObj.type === zparse.ZParsedType.string) {
+            return this.provideString(parsed, parser, position);
+        }
+
+        if (parsed.parsedObj.type === zparse.ZParsedType.command || parsed.parsedObj.type === zparse.ZParsedType.htagGet) {
+            return await this.provideCommand(parsed, parser, position, insertComma);
+        }
+                    
+        if (parsed.parsedObj.type === zparse.ZParsedType.mathFn){
+            return addVariableByType(out, parser, parsed, ZArgType.number)
+        };
+
+        return out;
+    }
+
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, 
                                   context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList>
     {
@@ -423,115 +567,10 @@ export class ZCompletionProver implements vscode.CompletionItemProvider {
 
         let zscriptConfig = vscode.workspace.getConfiguration('zscript');
         let inserComma = zscriptConfig.get<Boolean>("autoComplete.insertComma");
+        if (inserComma === undefined) {
+            inserComma = false;
+        }
 
-        return new Promise((resolve, reject) => {
-            this.parser.getZFileParser(document).then(parser => {
-                let out: vscode.CompletionItem[] = [];
-                let parsed = parser.getZParsedForPosition(position);
-
-                if (parsed){
-                    if (parsed.parsedObj.type === zparse.ZParsedType.string){
-                        let parentParsed = parsed.parsedObj.scope.parent;
-                        if (parentParsed && parentParsed.owner){
-                            // this is a command inside scope.
-                            let parentCmd = parentParsed.owner; 
-                            let cmdFile = cmdArgFilename[parentCmd.commandName];
-                            if (cmdFile){
-                                let index = parentCmd.insideScope.scopes.indexOf(parsed.parsedObj.scope);
-                                if (index === cmdFile.id){
-                                    let stringVal = (<zparse.ZParsedString>parsed.parsedObj).getStringValue();
-                                    resolve(getRelativePath(stringVal, parser.document.fileName, cmdFile));
-                                }
-                            } else {
-                                resolve(getWindowPathID(parser, <zparse.ZParsedString>parsed.parsedObj, position));
-                            }
-                        }
-                        resolve(null);
-
-                    }
-                    if (parsed.parsedObj.type === zparse.ZParsedType.command || parsed.parsedObj.type === zparse.ZParsedType.htagGet){
-                        let command = parsed.parsedObj as zparse.ZParsedCommand;
-                        
-                        let parentParsed = parsed.parsedObj.scope.parent;
-                        let returnType = ZArgType.any;
-                        if (parentParsed && parentParsed.owner){
-                            // this is a command inside scope.
-                            let commandName = parentParsed.owner.commandName;
-                            let comObj = zScriptCmds[commandName];
-                            if (comObj){
-                                let index = parentParsed.owner.insideScope.scopes.indexOf(parsed.parsedObj.scope);
-                                if (commandName === 'VarSet' || commandName === 'VarDef'){
-                                    // htag var or var command,
-                                    if (command.commandName === 'Var'){
-                                        resolve(addVariableTypeForVarSet(parser, parsed, parentParsed.owner));
-                                    }else{
-                                        if (index === 2 && parsed.index === 0){
-                                            resolve(addFunctionTypeForVarSet(parser, parsed, parentParsed.owner, inserComma));
-                                        }
-                                    }
-                                }else{
-                                    index -= 1;
-                                    if ( index > 0 && index < comObj.args.length){
-                                        returnType = comObj.args[index].type;
-                                    }
-                                }
-                            } 
-                        }
-
-                        if (parsed.index >= 3){
-                            if (command.commandName === "RoutineDef"){
-                                    addSnippetType(out);
-                                    resolve(out);
-                                }
-                            
-                        }
-
-                        if (parsed.index >= 2){
-                            if (command.commandName === "RoutineCall"){
-                                let routineName = command.getVariableName();
-                                resolve(addVariableForRoutineCall(parser, routineName, parsed));
-                            }
-                        }
-
-                        // first argument of the command
-                        // usually the command name list all command
-                        if (parsed.index <= 0){
-                            if (command.insideScope.scopes.length > 1){
-                                inserComma = false;
-                            }
-                            if (command.isZscriptInsert){
-                                addZFunctionToCompletionItem(out, '<', parsed.index, inserComma, {'zscriptinsert': 0}, ZArgType.any, position);
-                            }else{
-                                addZFunctionToCompletionItem(out, '[', parsed.index, inserComma, null, returnType);
-                            }
-                        }else{
-                            if (parsed.index === 2 && (command.commandName === 'VarSet' || command.commandName === 'VarDef')){
-                                resolve(addVariableTypeForVarSet(parser, parsed, command));
-                            }
-
-                            let argType = command.getCommandArgsType(parsed.index);
-                            if (argType === undefined){
-                                argType = ZArgType.any;
-                            }
-                            if (argType === ZArgType.any || argType === ZArgType.number){
-                                addMathFn(out);
-                            }
-
-                            resolve(addVariableByType(out, parser, parsed, argType));
-                        }
-                    }
-                    
-                    if (parsed.parsedObj.type === zparse.ZParsedType.mathFn){
-                        resolve(addVariableByType(out, parser, parsed, ZArgType.number));
-                    }
-                }else{
-                    addMathFn(out);
-                }
-                resolve(out);
-            }).catch(reason => {
-                console.log(reason);
-                reject(reason);
-            });
-        });
+        return this.provide(document, position, inserComma);
     }
 }

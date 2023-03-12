@@ -1,3 +1,6 @@
+## 1.7.0 - March 12th, 2023
+* Add missing subtool command
+
 ## 1.6.0 - July 21th
 * Provide additional syntax highlight [#9](https://github.com/JonasOuellet/vscode-zscript/issues/9)
 

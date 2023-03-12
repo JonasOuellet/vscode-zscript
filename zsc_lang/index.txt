@@ -610,7 +610,7 @@ hRotateCenter, vRotateCenter]
 * [TransformGet, xPos, yPos, zPos, xSc, ySc, zSc, xRot, yRot, zRot]
 * 
 * sets the variables xPos, yPos, zPos, xSc, ySc, zSc, xRot, yRot and zRot to the 3D Position,
-* , Scale and Rotation values of the last drawn object or current floating object.
+* Scale and Rotation values of the last drawn object or current floating object.
 */
 [TransformGet, xPos, yPos, zPos, xScale, yScale, zScale, xRot, yRot, zRot]
 
@@ -1349,7 +1349,7 @@ hRotateCenter, vRotateCenter]
 /**
 * Sets the task-priority of ZBrush.
 * @param priority: (number) - The priority. -2:Low, -1:BelowNormal, 0:normal, 1:Above Normal,
-* , 2:High
+* 2:High
 * 
 * Example:
 * 
@@ -2995,24 +2995,6 @@ maxLength]
 [SoundStop, memBlock]
 
 /**
-* Returns the full path of the active tool (<strong>Sub-Level</strong> only). Output: The
-* path of the active tool.
-* return (string)
-* 
-* <a id="GetActiveToolPath15" name="SubToolSelect"></a>
-*/
-[GetActiveToolPath]
-
-/**
-* Returns the index of the active tool (<strong>Sub-Level</strong> only). Output: Returns
-* the index of the active tool (zero based).
-* return (number)
-* 
-* <a id="GetActiveToolPath9" name="ToolGetCount"></a>
-*/
-[ToolGetActiveIndex]
-
-/**
 * Gets current Transpose Action Line values (<strong>Sub-Level</strong> only).
 * @param sXpos: (number) - Start xPos
 * @param sYpos: (number) - Start yPos
@@ -3308,7 +3290,7 @@ optOut7, optOut8]
 * @param propertyIndex: (number) - Property: 0:unused, 1:xPos, 2:yPos, 3:zPos, 4:radius,
 * 5:color, 6:mask, 7:ParentIndex, 8:unused, 9:TimeStamp, 10:unused, 11:unused, 12:unused,
 * 13:unused, 14:flags, 15:Twist Angle, 16:Membrane, 17:X Res, 18:Y Res, 19:Z Res, 20:XYZ Res,
-* , 21:UserValue
+* 21:UserValue
 * @param zSphereIndex: (number) - ZSphere index (0 based)
 * @param value: (number) - New property value
 * return (number)
@@ -3457,6 +3439,211 @@ optOut7, optOut8]
 * Set the time of the second key frame to 0.5 (the mid position).
 */
 [TLSetKeyFrameTime, KeyFrameIndex, Time]
+
+/**
+* Returns the full path of the active tool (<strong>Sub-Level</strong> only). Output: The
+* path of the active tool.
+* return (string)
+*/
+[GetActiveToolPath]
+
+/**
+* Selects the subtool at the specified subtool index (<strong>Sub-Level</strong> only).
+* Output: Returns zero if OK, -1 if error.
+* @param SubtoolIndex: (number) - Subtool Index (zero based).
+* return (number)
+* 
+* Example:
+* 
+* [SubToolSelect, 4]
+* 
+* Selects the 5th subtool.
+*/
+[SubToolSelect, SubtoolIndex]
+
+/**
+* Locates a subtool by the specified unique ID (<strong>Sub-Level</strong> only). Output:
+* Returns the index of the located subtool or -1 if error.
+* @param UniqueSubtoolID: (number) - Unique Subtool ID
+* return (number)
+*/
+[SubToolLocate, UniqueSubtoolID]
+
+/**
+* Returns the unique subtool ID (<strong>Sub-Level</strong> only). Output: Returns the
+* unique subtool ID or zero if error. Note that duplicates of meshes have the same ID.
+* @param SubtoolIndex: (number) - Subtool Index (zero based). If omited then uses the
+* currently selected subtool.
+* return (number)
+* 
+* Example:
+* 
+* [SubToolGetID, 4]
+* 
+* Returns the unique ID for the 5th subtool.
+*/
+[SubToolGetID, SubtoolIndex]
+
+/**
+* Returns the index of the active subtool (Sub-Level only). Output: Returns the index of the
+* active subtool (zero based).
+* return (number)
+*/
+[SubToolGetActiveIndex]
+
+/**
+* Returns the number of subtools in the active tool (<strong>Sub-Level</strong> only).
+* Output: Returns the number of subtools. Return 0 if error.
+* return (number)
+*/
+[SubToolGetCount]
+
+/**
+* Returns the folder index in which this subtool is contained
+* @param SubtoolIndex: (number) - Subtool Index (zero based).  If omited then use the
+* currently selected subtool.
+* return (number)
+* 
+* Output: Returns the folder index or -1 if this subtool is not within a folder.
+*/
+[SubToolGetFolderIndex, SubtoolIndex]
+
+/**
+* Returns the ffolder name of the specified subtool
+* @param ToolIndex: (number) - Tool Index (zero based). If omited then use the currently
+* selected tool.
+* return (string)
+* 
+* Output: Result folder name or empty if subtool is not in a folder.
+*/
+[SubToolGetFolderName, ToolIndex]
+
+/**
+* Returns the status of a subtool
+* @param SubtoolIndex: (number) - Subtool Index (zero based).  If omited then use the
+* currently selected subtool.
+* return (string)
+* 
+* Output: Returns the status (Subtool Eye=0x01, Folder Eye=0x02, UnionAdd=0x10,
+* UnionSub=0x20, UnionClip=0x40, UnionStart=0x80, ClosedFolder=0x400, OpenedFolder=0x800).
+*/
+[SubToolGetStatus, SubtoolIndex]
+
+/**
+* Sets the status of a subtool
+* @param SubtoolIndex: (number) - Subtool Index (zero based).  If omited then use the
+* currently selected subtool.
+* @param SubtoolEye: (number) - New Value (Subtool Eye=0x01
+* @param FolderEye: (number) - Folder Eye=0x02
+* @param UnionAdd: (number) - UnionAdd=0x10
+* @param UnionSub: (number) - UnionSub=0x20
+* @param UnionClip: (number) - UnionClip=0x40
+* @param UnionStart: (number) - UnionStart=0x80
+* @param ClosedFolder: (number) - ClosedFolder=0x400
+* @param OpenedFolder: (number) - OpenedFolder=0x800)
+*/
+[SubToolSetStatus, SubtoolIndex, SubtoolEye, FolderEye, UnionAdd, UnionSub, UnionClip,
+UnionStart, ClosedFolder, OpenedFolder]
+
+/**
+* Returns the index of the active tool (<strong>Sub-Level</strong> only). Output: Returns
+* the index of the active tool (zero based).
+* return (number)
+*/
+[ToolGetActiveIndex]
+
+/**
+* Returns the number of available tools (<strong>Sub-Level</strong> only). Output: Returns
+* the number of available tools.
+* return (number)
+*/
+[ToolGetCount]
+
+/**
+* Returns the file path or name of the specified tool (<strong>Sub-Level</strong> only).
+* Output: Result path (without the .ztl). Empty if error.
+* @param ToolIndex: (number) - Tool Index (zero based). If omited then uses the currently
+* selected tool.
+* return (string)
+* 
+* Example:
+* 
+* [ToolGetPath, 4]
+* 
+* Returns the path of the 5th tool.
+*/
+[ToolGetPath, ToolIndex]
+
+/**
+* Returns the unique subtool ID (<strong>Sub-Level</strong> only). Output: Returns the
+* unique subtool ID or zero if error. Note that duplicates of meshes have the same ID.
+* @param ToolIndex: (number) - Tool Index (zero based). If omited then use the currently
+* selected tool.
+* @param SubtoolIndex: (number) - Subtool Index (zero based). If omited then uses the
+* selected subtool.
+* return (number)
+* 
+* Example:
+* 
+* [ToolGetSubToolID, 1, 4]
+* 
+* Returns the unique subtool ID of the 5th subtool in the 2nd tool.
+*/
+[ToolGetSubToolID, ToolIndex, SubtoolIndex]
+
+/**
+* Returns the number of subtools in the specified tool index (<strong>Sub-Level</strong>
+* only). Output: Returns the number of subtools. Return 0 if error.
+* @param ToolIndex: (number) - Tool Index (zero based). If omited then uses the currently
+* selected tool.
+* return (number)
+* 
+* Example:
+* 
+* [ToolGetSubToolsCount, 4]
+* 
+* Returns the subtool count for the 5th tool.
+*/
+[ToolGetSubToolsCount, ToolIndex]
+
+/**
+* Locates a subtool by the specified unique ID (<strong>Sub-Level</strong> only). Output:
+* Returns the index of the located tool and subtool or -1 if error.
+* @param UniqueSubtoolID: (number) - Unique Subtool ID
+* @param OptionalSubtoolIndexResult: (number) - Optional subtool index result
+* return (number)
+*/
+[ToolLocateSubTool, UniqueSubtoolID, OptionalSubtoolIndexResult]
+
+/**
+* Selects the tool at the specified tool index (<strong>Sub-Level</strong> only). Output:
+* Returns zero if OK, -1 if error.
+* @param ToolIndex: (number) - Tool Index (zero based).
+* return (number)
+* 
+* Example:
+* 
+* [ToolSelect, 4]
+* 
+* Selects the 5th tool.
+*/
+[ToolSelect, ToolIndex]
+
+/**
+* Sets the file path or name of the specified tool (<strong>Sub-Level</strong> only).
+* Output: Returns zero if OK, -1 if error.
+* @param ToolIndex: (number) - Tool Index (zero based). If omited then uses the currently
+* selected tool.
+* @param NewPath: (string) - New Path. Path extension (such as .ztl) will be omited.
+* return (number)
+* 
+* Example:
+* 
+* [ToolSetPath, ,[FileNameAdvance,[ToolGetPath]]]
+* 
+* Advances the file name of the active tool by 1.
+*/
+[ToolSetPath, ToolIndex, NewPath]
 
 /**
 * Integer Portion of value; removes everything after decimal point

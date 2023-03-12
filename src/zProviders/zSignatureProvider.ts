@@ -73,35 +73,31 @@ export class ZSignatureProvider implements vscode.SignatureHelpProvider {
 
     public provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, 
     context: vscode.SignatureHelpContext): vscode.ProviderResult<vscode.SignatureHelp>{
-        return new Promise((resolve, reject) => {
-            this.parser.getZFileParser(document).then(parsedFile => {
-                let zParsed = parsedFile.getZParsedForPosition(position);
+        return this.parser.getZFileParser(document).then(parsedFile => {
+            let zParsed = parsedFile.getZParsedForPosition(position);
 
-                if (zParsed){
-                    let type = zParsed.parsedObj.type;
-                    if (type === zparse.ZParsedType.command){
-                        let command = zParsed.parsedObj as zparse.ZParsedCommand;
-                        let commandName = command.commandName;
-        
-                        if (commandName === 'RoutineCall' && zParsed.index >= 2){
-                            // Do something special for routine call when index is >= 2 so we know the name of the var
-                            resolve(getSignatureForRoutineCall(parsedFile, command, zParsed.index - 2));
-                        }
-                        else{
-                            resolve(getSignature(zScriptCmds, commandName, zParsed.index - 1));
-                        }
-                    }else if (type === zparse.ZParsedType.mathFn){
-                        let command = zParsed.parsedObj as zparse.ZParsedCommand;
-                        let commandName = command.commandName;
-                        resolve(getSignature(zMathFns, commandName, zParsed.index));
-                    }
+            if (!zParsed) {
+                return null;
+            }
+            let type = zParsed.parsedObj.type;
+            if (type === zparse.ZParsedType.command){
+                let command = zParsed.parsedObj as zparse.ZParsedCommand;
+                let commandName = command.commandName;
+
+                if (commandName === 'RoutineCall' && zParsed.index >= 2){
+                    // Do something special for routine call when index is >= 2 so we know the name of the var
+                    return getSignatureForRoutineCall(parsedFile, command, zParsed.index - 2);
                 }
-        
-                resolve(null);
-            }).catch(reason => {
-                reject(reason);
-            });
-        });
-
+                else{
+                    return getSignature(zScriptCmds, commandName, zParsed.index - 1);
+                }
+            }else if (type === zparse.ZParsedType.mathFn){
+                let command = zParsed.parsedObj as zparse.ZParsedCommand;
+                let commandName = command.commandName;
+                return getSignature(zMathFns, commandName, zParsed.index);
+            }
+        }).catch((reason) => {
+            return null;
+        })
     }
 }

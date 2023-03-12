@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as zproviders from "./zProviders";
-import { installIcon, uninstallIcon } from "./install_icon";
 import { ZParser } from './zParser';
 
 
@@ -24,9 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand('vscode.open', 
             vscode.Uri.parse("http://docs.pixologic.com/user-guide/customizing-zbrush/zscripting/command-reference/"));
     }));
-
-    context.subscriptions.push(vscode.commands.registerCommand("zscript.installFileIcon", installIcon));
-    context.subscriptions.push(vscode.commands.registerCommand("zscript.uninstallFileIcon", uninstallIcon));
 
     /*
         Providers definition

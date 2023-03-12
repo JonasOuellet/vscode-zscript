@@ -1,66 +1,74 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as zparse from "../zFileParser";
+import * as testhelper from "./testHelper";
+
 
 // https://wietse.loves.engineering/testing-promises-with-mocha-90df8b7d2e35
 
-let file = vscode.Uri.file(vscode.workspace.rootPath + '/testFile1.txt');
 
 suite("ZParse Range and get ZParsed for position", function () {
 
     test("ZRange isContaining pos test1", ()=>{
         let range = new zparse.ZRange(25, 50);
-        
-        assert.equal(range.isContainingPosition(50), true);
+        let test = range.isContainingPosition(50);
+        assert(test);
     });
 
     test("ZRange isContaining pos test2", ()=>{
         let range = new zparse.ZRange(25, 50);
         
-        assert.equal(range.isContainingPosition(26), true);
+        assert(range.isContainingPosition(26));
     });
 
     test("ZRange isContaining pos test3", ()=>{
         let range = new zparse.ZRange(25, 50);
         
-        assert.equal(range.isContainingPosition(40), true);
+        assert(range.isContainingPosition(40));
     });
 
     test("ZRange is not Containing pos", ()=>{
         let range = new zparse.ZRange(25, 50);
         
-        assert.equal(range.isContainingPosition(24), false);
+        assert.strictEqual(range.isContainingPosition(24), false);
     });
 
     test("ZRange is not Containing pos exclusive", ()=>{
         let range = new zparse.ZRange(25, 50);
-        
-        assert.equal(range.isContainingPosition(50, false), false);
+        // make sure that this is really what we want.
+        let value = range.isContainingPosition(50, false);
+        assert.strictEqual(value, true);
     });
 
-    test("ZParsed for positon 1", (done) => {
-        vscode.window.showTextDocument(file).then((textEditor) => {
-            let parser = new zparse.ZFileParser(textEditor.document);
+    test("ZParsed Literal Txt", (done) => {
+        vscode.window.showTextDocument(testhelper.getTestFile("testFile1.txt")).then((te) => {
+            let parser = new zparse.ZFileParser(te.document);
             parser.parseDocument();
-
             let parsed = parser.getZParsedForPosition(new vscode.Position(0, 15));
-            assert.notEqual(parsed, null);
-            if (parsed){
-                assert.equal(parsed.parsedObj.type, zparse.ZParsedType.lText);
-            }
-            
+            assert.notStrictEqual(parsed, null);
+            assert.strictEqual(parsed?.parsedObj.type, zparse.ZParsedType.lText);
+        }).then(done, done);
+    });
+    
+    test("ZParsed Null", (done) => {
+        vscode.window.showTextDocument(testhelper.getTestFile("testFile1.txt")).then((te) => {
+            let parser = new zparse.ZFileParser(te.document);
+            parser.parseDocument();
             let parsedNull = parser.getZParsedForPosition(new vscode.Position(5, 0));
-            assert.equal(parsedNull, null);
-
+            assert.strictEqual(parsedNull, null);
+        }).then(done, done); 
+    });
+    
+    test("ZParsed, empty command", (done) => {
+        vscode.window.showTextDocument(testhelper.getTestFile("testFile1.txt")).then((te) => {
+            let parser = new zparse.ZFileParser(te.document);
+            parser.parseDocument();
             let parsedEmptyCommand = parser.getZParsedForPosition(new vscode.Position(7, 1));
-            assert.notEqual(parsedEmptyCommand, null);
+            assert.notStrictEqual(parsedEmptyCommand, null);
             if (parsedEmptyCommand){
-                assert.equal(parsedEmptyCommand.parsedObj.type, zparse.ZParsedType.command);
-                assert.equal(parsedEmptyCommand.index, -1);
+                assert.strictEqual(parsedEmptyCommand.parsedObj.type, zparse.ZParsedType.command);
+                assert.strictEqual(parsedEmptyCommand.index, 0);
             }
-
-        }, (reason) => {
-            console.log(reason);
         }).then(done, done);
     });
 });

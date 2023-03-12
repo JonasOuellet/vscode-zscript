@@ -10,7 +10,7 @@ export class ZHighLightProvider implements vscode.DocumentHighlightProvider {
         this.parser = parser;
     }
 
-    createDocHighligts(parsedText: ZParsedText[]): vscode.DocumentHighlight[] {
+    private createDocHighligts(parsedText: ZParsedText[]): vscode.DocumentHighlight[] {
         let out: vscode.DocumentHighlight[] = [];
         for (let text of parsedText){
             out.push(new vscode.DocumentHighlight(text.range.convertToVsCodeRange(text.parser.document), vscode.DocumentHighlightKind.Read));  
@@ -18,37 +18,37 @@ export class ZHighLightProvider implements vscode.DocumentHighlightProvider {
         return out;
     }
 
-    provideDocumentHighlights(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): 
-    vscode.ProviderResult<vscode.DocumentHighlight[]>{
+    private async provide(
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): Promise<vscode.DocumentHighlight[]> {
         let word = document.getText(document.getWordRangeAtPosition(position));
+        let parse = await this.parser.getZFileParser(document);
+        let parsedObj = parse.getZParsedForPosition(position);
+        if (!parsedObj){
+            return [];
+        }
 
-        return new Promise((resolve, reject) => {
-            this.parser.getZFileParser(document).then(parse => {
-                let parsedObj = parse.getZParsedForPosition(position);
-                if (parsedObj){
-                    let curScope = parsedObj.parsedObj.scope;
-                    let args = parse.getArgsByName(word, curScope);
-
-                    if (args) {
-                        let texts = parse.getVariableOccurences(word, args.insideScope);
-                        resolve(this.createDocHighligts(texts));
-                    }
-
-                    resolve(parse.getVariableByName(word, curScope).then((Zvar)=>{
-                        if (Zvar){
-                            let texts = parse.getVariableOccurences(word);
-                            return this.createDocHighligts(texts);
-                        }
-                        return [];
-                    }, (reason) => {
-                        return [];
-                    }));
-                }
-                resolve([]);
-                }).catch(reason => {
-                    reject(reason);
-                });
-            });
+        let curScope = parsedObj.parsedObj.scope;
+        let args = parse.getArgsByName(word, curScope);
+        if (args) {
+            let texts = parse.getVariableOccurences(word, args.insideScope);
+            return this.createDocHighligts(texts);
+        }
+    
+        let zvar = await parse.getVariableByName(word, curScope);
+        if (zvar){
+            let texts = parse.getVariableOccurences(word);
+            return this.createDocHighligts(texts);
+        }
+        return [];
     }
 
+    provideDocumentHighlights(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.DocumentHighlight[]>{
+        return this.provide(document, position);
+    }
 }

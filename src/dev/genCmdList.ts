@@ -7,8 +7,7 @@
 
 import * as http from "http";
 import { JSDOM } from "jsdom";
-import { ZArg, ZCommandObject, zWriteCommandToFile, ZArgType, ZScriptLevel } from "../zCommandUtil";
-
+import { ZArg, ZCommandObject,  zWriteCommandToFile, ZArgType, ZScriptLevel } from "../zCommandUtil";
 
 var options = {
     host: "docs.pixologic.com",
@@ -80,21 +79,26 @@ var request = http.request(options, (res) => {
             let tableBody = curTable.querySelector('tbody');
             if (tableBody) {
                 let tableContent = tableBody.querySelectorAll("tr");
-                for (let x = 1; x < tableContent.length; x+=4) {
+                for (let x = 1; x < tableContent.length; x+=1) {
                     //let currentCommandObject : LooseObject = {};
                     const tabElem = tableContent[x];
                     const tds = tabElem.querySelectorAll("td");
-                    if (tds && tds.length >= 2) {
+                    if (tds && tds.length == 2) {
                         let nameElem = tds[0].querySelector('b');
                         if (!nameElem) {
                             continue;
                         }
                         let commandName = nameElem.innerHTML;
+                        console.log(`${x}: ${commandName}`);
+                        if (commandName == "SubToolSetStatus") {
+                            console.log("finally");
+                        }
+
                         if (commandName){
                             if (commandName === "Math Operators"){
                                 // Need to decrement x because there is not 2 table for exemple and info
                                 // (Only one.)
-                                x -= 1;
+                                // x -= 1;
                             }
                             else if (commandName === "Logical Operators"){
                             }
